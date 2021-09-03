@@ -1,7 +1,22 @@
-import IO from './io.mod.ts'
+import IOPromise from './io-promise.mod.ts'
 import Reader from '../shared/reader.mod.ts'
 
-export const IOCommand = (cmd: string[]) => IO.of(() => Deno.run({ cmd, stdout: "piped", stderr: "piped" }))
+const promisifyProcess = async <T extends Deno.RunOptions>(proc: Deno.Process<T>) => {
+    const status = await proc.status()
+    if( status.code === 0 ){
+        return proc.output()
+    } else {
+        const err = await proc.stderrOutput();
+        return Promise.reject(`${decode(err)} \nProcess exited with non-zero code ${status.code}`)
+    }
+}
+
+const denoProc = (cmd: string[]) => promisifyProcess(Deno.run({ cmd, stderr: "piped", stdout: "piped" }))
+
+export const IOCommand = {
+    of: IOPromise.unary(denoProc),
+    decoded: (cmd: string[]) => IOCommand.of(cmd).map(decode)
+}
 
 export type CommandResult<T> = Promise<T> | Promise<never>
 
