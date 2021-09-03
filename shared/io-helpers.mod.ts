@@ -11,4 +11,4 @@ export const doConfirm = (msg: string) =>
             .toIOPromise()
     })
 
-export const printLn = IOPromise.unary(console.log);
+export const printLn = IOPromise.through(console.log);

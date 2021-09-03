@@ -4,11 +4,9 @@ import { Command } from "./shared/command.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 
-const NoOp = (cmdName: string) => Command.of<never>(() => {
-    return Promise.reject(`No "${cmdName}" command found`)
-})
+const NoOp = (cmdName: string) => Command.fail(`No "${cmdName}" command found`)
 
-const Debug = Command.pure().map(env => env.then(x => JSON.stringify(x)))
+const Debug = Command.ask().map(JSON.stringify).map(x => Promise.resolve(x))
 
 const pickCommand = (cmdName: string): Command<string> => {
     return {

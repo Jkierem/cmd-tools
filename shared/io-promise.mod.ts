@@ -2,7 +2,7 @@ type UnwrapPromise<A> = A extends Promise<infer B> ? B : A
 
 type IOPromise<A> = {
     map: <B>(fn: (a: A) => B) => IOPromise<B extends Promise<infer C> ? C : B>,
-    effect: (fn: (a: A) => void) => IOPromise<A>,
+    effect: <B>(fn: (a: A) => IOPromise<B>) => IOPromise<A>,
     chain: <B>(fn: (a: A) => IOPromise<B>) => IOPromise<B>,
     sequence: <B>(io: IOPromise<B>) => IOPromise<B>,
     zip: <B>(io: IOPromise<B>) => IOPromise<[A,B]>,
@@ -20,10 +20,7 @@ const succeed = <A>(run: () => Promise<A>): IOPromise<A> => {
         zip(io){ return this.chain((a) => io.map(b => [a,b]))},
         zipLeft(io){ return this.zip(io).map(([a]) => a) as IOPromise<A> },
         zipRight(io){ return this.chain(() => io)},
-        effect: (fn) => succeed(() => run().then(x => {
-            fn(x)
-            return x
-        }))
+        effect(fn){ return this.chain(a => fn(a).map(() => a)) as IOPromise<A> },
     }
 }
 
@@ -32,6 +29,7 @@ const IOPromise = {
     fromSync: <A>(fn: () => A): IOPromise<A> => succeed(() => Promise.resolve().then(fn)),
     fromAny: <A>(fn: () => A): IOPromise<UnwrapPromise<A>> => succeed(() => Promise.resolve().then(fn)) as IOPromise<UnwrapPromise<A>>,
     unary: <A,B>(fn: (a: A) => B) => (arg: A) => IOPromise.fromAny(() => fn(arg)),
+    through: <A,B>(fn: (...a: A[]) => B) => (...arg: A[]) => IOPromise.fromAny(() => fn(...arg)),
     succeed: <A>(a: A) => IOPromise.fromSync(() => a),
     fail: <A>(err: A) => IOPromise.of(() => Promise.reject(err)),
 }

@@ -36,6 +36,9 @@ const Left = <Left,Right>(x: Left): Either<Left,Right> => {
 
 const Either = {
     of: <T>(x: T) => (x ? Right(x) : Left(x)) as Either<T,NonNullable<T>>,
+    fromPredicate: <T>(pred: (x: T) => boolean, x: T) => Either.of(pred(x))
+        .map(() => x)
+        .mapLeft(() => x),
     Left,
     Right
 }
