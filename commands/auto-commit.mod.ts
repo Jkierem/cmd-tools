@@ -1,5 +1,5 @@
-import Either from './either.mod.ts'
-import { IOCommand, Command, decode, CommandEnv } from './shared.mod.ts'
+import Either from '../shared/either.mod.ts'
+import { IOCommand, Command, decode, CommandEnv } from '../shared/command.mod.ts'
 
 const gitCmd = (...cmd: string[]) => ["git",...cmd]
 const status = gitCmd("status")
