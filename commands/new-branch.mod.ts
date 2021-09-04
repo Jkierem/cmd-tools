@@ -10,6 +10,6 @@ const NewBranch: Command<string> = Command
     .map(branchCmd)
     .effect(printRunMessage)
     .zipLeft(doDefaultConfirm)
-    .chain(IOProcess.decoded)
+    .chain(IOProcess.of)
 
 export default NewBranch

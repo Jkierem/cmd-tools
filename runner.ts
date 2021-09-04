@@ -21,13 +21,13 @@ const pickCommand = (cmdName: string): Command<string> => {
 }
 
 const onConsole = (method: "log" | "error") => (pre: string) => (x: string) => {
-    console[method](pre)
     console[method](x)
+    console[method](pre)
 }
 const logSuccess = onConsole("log")
 const logError = onConsole("error")
 
 pickCommand(command)
-.run({ args: commandArgs })
+.run({ args: commandArgs, config: {} })
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

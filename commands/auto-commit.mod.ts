@@ -38,7 +38,7 @@ const AutoCommit: Command<string> = Command.ask().map(prepare).chain(({ message 
         .chain(findTicketName)
         .map((ticket) => commitCmd(`${ticket}: ${message}`))
         .effect(printRunMessage)
-        .chain(IOProcess.decoded)
+        .chain(IOProcess.of)
 })
 
 export default AutoCommit;

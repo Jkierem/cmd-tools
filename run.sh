@@ -1,1 +1,1 @@
-deno run --allow-run auto-commit.ts
+deno run --allow-run 

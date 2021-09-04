@@ -1,15 +1,21 @@
 import IOPromise from './io-promise.mod.ts'
+import Maybe from './maybe.mod.ts'
 
 const Decoder = new TextDecoder()
 const decode = (x: Uint8Array) => Decoder.decode(x)
 
+const decodeOrEmpty = (uint: Uint8Array) => Maybe.fromEmpty(uint).map(decode).onNone('')
+
 const promisifyProcess = async <T extends Deno.RunOptions>(proc: Deno.Process<T>) => {
     const status = await proc.status()
+    const stdOut = await proc.output()
+    const stdErr = await proc.stderrOutput()
+
+    const message = `${decodeOrEmpty(stdOut) || decodeOrEmpty(stdErr)}`
     if( status.code === 0 ){
-        return proc.output()
+        return message
     } else {
-        const err = await proc.stderrOutput();
-        return Promise.reject(`${decode(err)} \nProcess exited with non-zero code ${status.code}`)
+        return Promise.reject(message+`Process exited with non-zero code ${status.code}`)
     }
 }
 
@@ -17,12 +23,13 @@ const denoProc = (cmd: string[]) => promisifyProcess(Deno.run({ cmd, stderr: "pi
 
 export const IOProcess = {
     of: IOPromise.unary(denoProc),
-    decoded: (cmd: string[]) => IOProcess.of(cmd).map(decode)
 }
 
 export type CommandResult<T> = T | never
 
-export type CommandEnv = { args: string[] }
+export type CommandConfig = {}
+
+export type CommandEnv = { args: string[], config: CommandConfig }
 
 export type Command<A> = IOPromise<CommandEnv,CommandResult<A>>
 
