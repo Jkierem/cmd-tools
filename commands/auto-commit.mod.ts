@@ -15,13 +15,11 @@ const validateMessage = (message: string) => {
         ).toIOPromise()
 }
 
-const validateBranch = (branch: string | undefined) => {
-    return Either.of(branch)
-        .mapLeft(() => "No branch found")
-        .chain(b => Either
-            .fromPredicate(x => /DITYS-[0-9]*/.test(x), b)
-            .mapLeft(() => "Branch is not a feature branch")
-        ).toIOPromise()
+const validateBranch = (branch: string) => {
+    return Either
+        .fromPredicate(x => /DITYS-[0-9]*/.test(x), branch)
+        .mapLeft(() => "Branch is not a feature branch")
+        .toIOPromise()
 }
 
 const findTicketName = (str: string) => {

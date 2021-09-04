@@ -1,7 +1,8 @@
 type UnwrapPromise<A> = A extends Promise<infer B> ? B : A 
 
 type IOPromise<Env,A> = {
-    map: <B>(fn: (a: A) => B) => IOPromise<Env,B extends Promise<infer C> ? C : B>,
+    map: <B>(fn: (a: A) => B) => IOPromise<Env,UnwrapPromise<B>>,
+    mapTo: <B>(b: B) => IOPromise<Env,B>,
     effect: <B>(fn: (a: A) => IOPromise<Env,B>) => IOPromise<Env,A>,
     chain: <B>(fn: (a: A) => IOPromise<Env,B>) => IOPromise<Env,B>,
     sequence: <B>(io: IOPromise<Env,B>) => IOPromise<Env,B>,
@@ -17,6 +18,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         map: <B>(fn: (a: A) => B): IOPromise<Env, UnwrapPromise<B>> => succeed((env) => {
             return run(env).then(fn) as Promise<UnwrapPromise<B>>
         }),
+        mapTo<B>(b: B){ return this.map(() => b) as IOPromise<Env,B> },
         chain: (fn) => succeed((env) => run(env).then(x => fn(x).run(env))),
         sequence(io){ return this.chain(() => io)},
         zip(io){ return this.chain((a) => io.map(b => [a,b]))},
