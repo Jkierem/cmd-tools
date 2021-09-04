@@ -1,10 +1,9 @@
-import Either from '../shared/either.mod.ts'
-import { printLn } from '../shared/io-helpers.mod.ts'
-import { IOProcess, Command, CommandEnv } from '../shared/command.mod.ts'
+import Either from '../core/either.mod.ts'
+import { printRunMessage } from '../core/io-helpers.mod.ts'
+import { getCurrentBranch, gitCmd } from "../core/git-helpers.mod.ts"
+import { IOProcess, Command, CommandEnv } from '../core/command.mod.ts'
 
-const gitCmdArgs = (...cmd: string[]) => ["git",...cmd]
-const statusCmd = gitCmdArgs("status")
-const commitCmd = (msg: string) => gitCmdArgs("commit", "-m", msg)
+const commitCmd = (msg: string) => gitCmd("commit", "-m", msg)
 
 const validateMessage = (message: string) => {
     return Either.of(message)
@@ -34,19 +33,14 @@ const findTicketName = (str: string) => {
 
 const prepare = ({ args }: CommandEnv) => ({ message: args.join(" ") })
 
-const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
-
-const AutoCommit: Command<string> = Command.ask().map(prepare).map(({ message }) => {
+const AutoCommit: Command<string> = Command.ask().map(prepare).chain(({ message }) => {
     return validateMessage(message)
-        .sequence(IOProcess.decoded(statusCmd))
-        .map((str) => str.split(/[\n\r]/))
-        .map((str) => str.find(s => s.includes("On branch")))
+        .sequence(getCurrentBranch)
         .chain(validateBranch)
         .chain(findTicketName)
         .map((ticket) => commitCmd(`${ticket}: ${message}`))
         .effect(printRunMessage)
         .chain(IOProcess.decoded)
-        .run()
 })
 
 export default AutoCommit;

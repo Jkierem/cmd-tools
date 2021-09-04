@@ -7,7 +7,7 @@ type Either<Left,Right> = {
     mapLeft: <L>(fn: (l: Left) => L) => Either<L,Right>,
     chain: <L,R>(fn: (a: Right) => Either<L,R>) => Either<L,R>,
     fold: <L,R>(onLeft: (a: Left) => L, onRight: (b: Right) => R) => L | R,
-    toIOPromise: () => IOPromise<Right>
+    toIOPromise: () => IOPromise<unknown,Right>
 }
 
 const Right = <Left,Right>(x: Right): Either<Left,Right> => {
@@ -18,7 +18,7 @@ const Right = <Left,Right>(x: Right): Either<Left,Right> => {
         mapLeft: <L>(_fn: (a: Left) => L) => (Right(x) as unknown) as Either<L, Right>,
         chain: <L,R>(fn: (a: Right) => Either<L,R>) => fn(x),
         fold: <L,R>(_onLeft: (a: Left) => L, onRight: (b: Right) => R) => onRight(x),
-        toIOPromise: () => IOPromise.succeed(x)
+        toIOPromise: () => IOPromise.succeed(x) as IOPromise<unknown, Right>
     }
 }
 
@@ -39,6 +39,7 @@ const Either = {
     fromPredicate: <T>(pred: (x: T) => boolean, x: T) => Either.of(pred(x))
         .map(() => x)
         .mapLeft(() => x),
+    ofPredicate: <T>(pred: (x: T) => boolean) => (x: T) => Either.fromPredicate(pred,x),
     Left,
     Right
 }

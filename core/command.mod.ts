@@ -1,5 +1,4 @@
 import IOPromise from './io-promise.mod.ts'
-import Reader from '../shared/reader.mod.ts'
 
 const Decoder = new TextDecoder()
 const decode = (x: Uint8Array) => Decoder.decode(x)
@@ -21,16 +20,16 @@ export const IOProcess = {
     decoded: (cmd: string[]) => IOProcess.of(cmd).map(decode)
 }
 
-export type CommandResult<T> = Promise<T> | Promise<never>
+export type CommandResult<T> = T | never
 
 export type CommandEnv = { args: string[] }
 
-export type Command<A> = Reader<CommandEnv,CommandResult<A>>
+export type Command<A> = IOPromise<CommandEnv,CommandResult<A>>
 
 export const Command = {
-    of: <A>(fn: (env: CommandEnv) => Promise<A>): Command<A> => Reader.of(fn),
-    ask: () => Reader.of<CommandEnv,CommandEnv>(x => x),
-    pure: (): Command<CommandEnv> => Reader.of<CommandEnv, CommandResult<CommandEnv>>(x => Promise.resolve(x)),
-    fail: <T>(cause: T) => Reader.of<CommandEnv,CommandResult<never>>(() => Promise.reject(cause)),
-    succeed: <T>(value: T) => Command.pure().map(() => value)
+    of: <A>(fn: (env: CommandEnv) => Promise<A>): Command<A> => IOPromise.of(fn),
+    ask: () => IOPromise.of<CommandEnv, CommandEnv>(x => Promise.resolve(x)),
+    pure: (): Command<CommandEnv> => IOPromise.of(x => Promise.resolve(x)),
+    fail: <T>(cause: T) => IOPromise.fail(cause) as Command<never>,
+    succeed: <T>(value: T) => IOPromise.succeed(value) as Command<T>
 }
