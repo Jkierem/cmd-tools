@@ -7,6 +7,7 @@ type IOPromise<Env,A> = {
     tap: (fn: (a: A) => void) => IOPromise<Env,A>,
     chain: <B>(fn: (a: A) => IOPromise<Env,B>) => IOPromise<Env,B>,
     sequence: <B>(io: IOPromise<Env,B>) => IOPromise<Env,B>,
+    zipWith: <B,C>(io: IOPromise<Env,B>, fn: (a: A, b: B) => C) => IOPromise<Env, UnwrapPromise<C>>,
     zip: <B>(io: IOPromise<Env,B>) => IOPromise<Env, readonly [A,B]>,
     zipLeft: <B>(io: IOPromise<Env,B>) => IOPromise<Env,A>,
     zipRight: <B>(io: IOPromise<Env,B>) => IOPromise<Env,B>,
@@ -22,9 +23,12 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         mapTo<B>(b: B){ return this.map(() => b) as IOPromise<Env,B> },
         chain: (fn) => succeed((env) => run(env).then(x => fn(x).run(env))),
         sequence(io){ return this.chain(() => io)},
-        zip(io){ return this.chain((a) => io.map(b => [a,b] as const))},
-        zipLeft(io){ return this.zip(io).map(([a]) => a) as IOPromise<Env,A> },
-        zipRight(io){ return this.chain(() => io) },
+        zipWith<B,C>(io: IOPromise<Env,B>, fn: (a: A, b: B) => C){ 
+            return this.chain(a => io.map(b => fn(a,b)))
+        },
+        zip(io){ return this.zipWith(io, (a,b) => ([a,b] as const)) },
+        zipLeft(io){ return this.zipWith(io, a => a) as IOPromise<Env,A> },
+        zipRight<B>(io: IOPromise<Env,B>){ return this.zipWith(io, (_,b) => b) as IOPromise<Env,B> },
         effect(fn): IOPromise<Env, A>{ return this.chain(a => fn(a).map(() => a)) as IOPromise<Env,A> },
         tap(fn): IOPromise<Env, A>{ return this.map(a => { fn(a); return a }) as IOPromise<Env,A> },
     }
@@ -37,6 +41,8 @@ const IOPromise = {
     through: <A,B>(fn: (...a: A[]) => B) => (...arg: A[]) => IOPromise.from(() => fn(...arg)),
     succeed: <A>(a: A) => IOPromise.from(() => a),
     fail: <A>(err: A) => IOPromise.of(() => Promise.reject(err)),
+    require: <Env>() => IOPromise.from((env: Env) => env),
+    unit: succeed(() => Promise.resolve(undefined))
 }
 
 export default IOPromise

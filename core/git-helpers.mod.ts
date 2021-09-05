@@ -5,8 +5,12 @@ import { printRunMessage, printLn } from "./io-helpers.mod.ts"
 
 export const gitCmd = (...args: string[]) => ["git",...args]
 
-export const getCurrentBranch = IOProcess
-    .of(gitCmd("status"))
+export const gitStatus = IOProcess.of(gitCmd("status"))
+
+const noChangesStr = "nothing to commit, working tree clean"
+export const hasChanges = gitStatus.map(statusMsg => !statusMsg.includes(noChangesStr))
+
+export const getCurrentBranch = gitStatus
     .map((str) => str.split(/[\n\r]/))
     .map((str) => str.find(s => s.includes("On branch")))
     .chain((str) => Either.of(str)
@@ -40,3 +44,8 @@ export const rebaseBranch = (base: string) => {
         .effect(printRunMessage)
         .chain(IOProcess.of)
 }
+
+export const stashBranch = IOPromise
+    .succeed(gitCmd("stash","-m",'"auto-stashing current branch"'))
+    .effect(printRunMessage)
+    .chain(IOProcess.of)

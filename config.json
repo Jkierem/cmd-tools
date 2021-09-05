@@ -1,0 +1,14 @@
+{
+    "update": {
+        "base": "development",
+        "pullStrategy": "default",
+        "autoStashEnabled": "true"
+    },
+    "commit": {
+        "ticketToken": "DITYS"
+    },
+    "branch": {
+        "ticketToken": "DITYS",
+        "joinChar": "-"
+    }
+}

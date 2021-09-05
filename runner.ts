@@ -3,6 +3,7 @@ import SmartMove from "./commands/smart-move.mod.ts"
 import NewBranch from "./commands/new-branch.mod.ts"
 import AutoUpdate from "./commands/auto-update.mod.ts"
 import { Command } from "./core/command.mod.ts"
+import { getAllConfig } from "./core/configuration.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 
@@ -27,6 +28,7 @@ const onConsole = (method: "log" | "error") => (pre: string) => (x: string) => {
 const logSuccess = onConsole("log")
 const logError = onConsole("error")
 
+getConfig(command)
 pickCommand(command)
 .run({ args: commandArgs, config: {} })
 .then(logSuccess("Command was succesful"))
