@@ -22,6 +22,7 @@ type IOPromise<Env,A> = {
     expandDependency: <K extends keyof A>(key: K) => IOPromise<Env, A & A[K]>,
     accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
+    provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
     run: (env: Env) => Promise<A>
 }
 
@@ -59,6 +60,9 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         accessChain<K extends keyof A, Env0, B>(key: K, io: (a: A[K]) => IOPromise<Env0, B>){
             return this.access(key).chain(io)
         },
+        provideTo<B>(io: IOPromise<A,B>){
+            return this.chain(a => io.supply(a) as IOPromise<unknown,B>)
+        }
     }
 }
 

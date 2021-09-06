@@ -6,7 +6,7 @@ import { decode } from "./decode.mod.ts"
 export type UpdateConfig = {
     baseBranch: string,
     pullOptions: "default" | "rebase",
-    autoStashEnabled: boolean
+    autoStashEnabled: "true" | "false"
 }
 
 export type CommitConfig = {
@@ -31,18 +31,20 @@ export type EmptyConfig = Record<string,never>
 
 const readFile = (path: string) => IOPromise.of(() => Deno.readFile(path))
 
+const writeFile = (path: string, data: string) => IOPromise.of(() => Deno.writeTextFile(path, data))
+
 const parseConfig = (str: string) => Either
     .attempt(() => JSON.parse(str) as ConfigFile)
     .mapLeftTo("Error parsing config")
     .toIOPromise()
 
+const relativeConfig = (x: string) => `${x}/config.json`
+const getConfigPath = (fileUrl: string) => fromFileUrl(normalize(relativeConfig(dirname(fileUrl))))
+
 export const getAllConfig = IOPromise
     .require<{ fileUrl: string }>()
     .access("fileUrl")
-    .map(dirname)
-    .map(baseFolder => `${baseFolder}/config.json`)
-    .map(normalize)
-    .map(fromFileUrl)
+    .map(getConfigPath)
     .chain(readFile)
     .map(decode)
     .chain(parseConfig)
@@ -53,3 +55,11 @@ export const getConfig = IOPromise
     .require<{ command: string, fileUrl: string }>()
     .supplyChain("config", getAllConfig)
     .map(({ command, config }) => ({ config: getOr(command, {}, config) }))
+
+export const setConfig = IOPromise
+    .require<{ fileUrl: string, data: ConfigFile }>()
+    .map(({ fileUrl, data }) => ({ 
+        path: getConfigPath(fileUrl),
+        data: JSON.stringify(data)
+    }))
+    .chain(({ path, data }) => writeFile(path, data))

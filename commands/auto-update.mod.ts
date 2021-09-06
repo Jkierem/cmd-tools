@@ -15,7 +15,7 @@ const AutoUpdate: Command<UpdateConfig,string> = Command
     .expandDependency("config")
     .supplyChain("hasChanges", hasChanges)
     .effect(({ autoStashEnabled, hasChanges }) => {
-        return autoStashEnabled 
+        return autoStashEnabled === "true" 
             ? hasChanges 
                 ? stashBranch.chain(printLn)
                 : printLn("Branch has no changes")
