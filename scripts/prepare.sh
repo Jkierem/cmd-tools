@@ -10,4 +10,4 @@ cd ..
 echo "Test repo created in ./sandbox"
 echo "To install globaly run install.sh or add these lines to ~/.bashrc"
 echo "export CUSTOM_CMD_TOOLS=$CUSTOM_CMD_TOOLS"
-echo "alias do=\"deno run --allow-run \$CUSTOM_CMD_TOOLS/runner.ts\""
+echo "alias auto=\"deno run --allow-run --allow-read --allow-write \$CUSTOM_CMD_TOOLS/runner.ts\""

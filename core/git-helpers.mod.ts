@@ -32,8 +32,8 @@ export const switchBranch = (branch: string) => {
         .chain(IOProcess.of)
 }
 
-export const pullBranch = IOPromise
-    .succeed(gitCmd("pull"))
+export const pullBranch = (...pullOpts: string[]) => IOPromise
+    .succeed(gitCmd("pull",...pullOpts))
     .effect(printRunMessage)
     .chain(IOProcess.of)
     .effect(printLn)

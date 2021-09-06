@@ -11,6 +11,9 @@ type Either<Left,Right> = {
     toIOPromise: () => IOPromise<unknown,Right>
 }
 
+type Right<R> = Either<never,R>
+type Left<L> = Either<L,never>
+
 const Right = <Left,Right>(x: Right): Either<Left,Right> => {
     return {
         tag: "Right",
@@ -44,7 +47,14 @@ const Either = {
         .mapLeftTo(x),
     ofPredicate: <T>(pred: (x: T) => boolean) => (x: T) => Either.fromPredicate(pred,x),
     Left,
-    Right
+    Right,
+    attempt: <T>(fn: () => T) => {
+        try {
+            return Right(fn()) as Right<T>
+        } catch(e) {
+            return Left(e) as Left<unknown>
+        }
+    }
 }
 
 export default Either

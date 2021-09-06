@@ -6,9 +6,10 @@ const branchCmd = (name: string) => ["git","checkout","-b",name]
 
 const NewBranch: Command<BranchConfig,string> = Command
     .ask<BranchConfig>()
-    .map(({ args, config }) => [
-        config.branchPrefix,
-        args.join(config.joinChar)
+    .expandDependency("config")
+    .map(({ args, branchPrefix, joinChar }) => [
+        branchPrefix,
+        args.join(joinChar)
     ].join("-"))
     .map(branchCmd)
     .effect(printRunMessage)

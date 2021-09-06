@@ -1,7 +1,7 @@
 {
     "update": {
-        "base": "development",
-        "pullStrategy": "default",
+        "baseBranch": "development",
+        "pullOptions": "default",
         "autoStashEnabled": true
     },
     "commit": {

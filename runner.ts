@@ -34,9 +34,8 @@ const logSuccess = onConsole("log")
 const logError = onConsole("error")
 
 getConfig
-.supply({ command })
-.access("config")
-.chain((config) => pickCommand.supply({ config }))
-.run({ base: import.meta.url, args: commandArgs })
+.accessChain("config",(config) => pickCommand.supply({ config }))
+.supply({ command, fileUrl: import.meta.url, args: commandArgs })
+.run({})
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

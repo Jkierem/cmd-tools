@@ -1,7 +1,7 @@
 import Either from '../core/either.mod.ts'
 import { printRunMessage } from '../core/io-helpers.mod.ts'
 import { getCurrentBranch, gitCmd } from "../core/git-helpers.mod.ts"
-import { IOProcess, Command, CommandEnv } from '../core/command.mod.ts'
+import { IOProcess, Command } from '../core/command.mod.ts'
 import { CommitConfig } from "../core/configuration.mod.ts"
 
 const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]*`)
@@ -35,18 +35,19 @@ const findTicketName = (ticketToken: string) => (str: string) => {
 
 const AutoCommit: Command<CommitConfig,string> = Command
     .ask<CommitConfig>()
+    .expandDependency("config")
     .map(({ args, config }) => ({ 
         message: args.join(" "),
         ...config,
     }))
     .chain(({ message, ticketToken }) => {
-    return validateMessage(message)
-        .sequence(getCurrentBranch)
-        .chain(validateBranch(ticketToken))
-        .chain(findTicketName(ticketToken))
-        .map((ticket) => commitCmd(`${ticket}: ${message}`))
-        .effect(printRunMessage)
-        .chain(IOProcess.of)
-})
+        return validateMessage(message)
+            .sequence(getCurrentBranch)
+            .chain(validateBranch(ticketToken))
+            .chain(findTicketName(ticketToken))
+            .map((ticket) => commitCmd(`${ticket}: ${message}`))
+            .effect(printRunMessage)
+            .chain(IOProcess.of)
+    })
 
 export default AutoCommit;

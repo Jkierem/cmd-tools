@@ -19,6 +19,9 @@ type IOPromise<Env,A> = {
     supplyOne: <K extends keyof Env>(key: K, value: Env[K]) => IOPromise<Omit<Env,K>, A>,
     supply: <T>(reqs: T) => IOPromise<Omit<Env,keyof T>,A>,
     supplyChain: <B, K extends Key>(key: K, io: IOPromise<A,B>) => IOPromise<Env, A & { [P in typeof key]: B }>,
+    expandDependency: <K extends keyof A>(key: K) => IOPromise<Env, A & A[K]>,
+    accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
+    accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     run: (env: Env) => Promise<A>
 }
 
@@ -37,7 +40,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         zip(io){ return this.zipWith(io, (a,b) => ([a,b] as const)) },
         zipLeft<Env0,B>(io: IOPromise<Env0,B>){ return this.zipWith(io, a => a) as IOPromise<Env & Env0, A> },
         zipRight<Env0,B>(io: IOPromise<Env0,B>){ return this.zipWith(io, (_,b) => b) as IOPromise<Env & Env0,B> },
-        effect(fn): IOPromise<Env, A>{ return this.chain(a => fn(a).map(() => a)) as IOPromise<Env,A> },
+        effect(fn): IOPromise<Env, A>{ return this.chain(a => fn(a).mapTo(a)) as IOPromise<Env,A> },
         tap(fn): IOPromise<Env, A>{ return this.map(a => { fn(a); return a }) as IOPromise<Env,A> },
         access<K extends keyof A>(key: K){ return this.map(prop(key)) as IOPromise<Env,A[K]> },
         supplyOne<K extends keyof Env>(key: K, data: Env[K]){
@@ -46,7 +49,16 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         supply: (data) => succeed(env => run(({ ...env, ...data} as unknown) as Env)),
         supplyChain<B, K extends Key>(key: K, io: IOPromise<A,B>): IOPromise<Env, A & { [P in typeof key]: B }>{ 
             return this.chain((a) => io.supply(a).map(b => ({ ...a, [key]: b }))) as IOPromise<Env, A & { [P in typeof key]: B }>
-        }
+        },
+        expandDependency(key){
+            return this.map((x) => ({...x, ...x[key]}))
+        },
+        accessEffect<K extends keyof A, B>(key: K, io: (a: A[K]) => IOPromise<unknown, B>){
+            return this.chain(data => this.access(key).effect(io).mapTo(data))
+        },
+        accessChain<K extends keyof A, Env0, B>(key: K, io: (a: A[K]) => IOPromise<Env0, B>){
+            return this.access(key).chain(io)
+        },
     }
 }
 

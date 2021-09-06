@@ -12,14 +12,19 @@ import { UpdateConfig } from "../core/configuration.mod.ts"
 
 const AutoUpdate: Command<UpdateConfig,string> = Command
     .ask<UpdateConfig>()
-    .sequence(hasChanges)
-    .chain(shouldStash => shouldStash 
-        ? stashBranch.chain(printLn) 
-        : printLn("Branch has no changes"))
-    .sequence(getCurrentBranch)
-    .zipLeft(switchBranch("development"))
-    .zipLeft(pullBranch)
-    .chain(switchBranch)
-    .zipRight(rebaseBranch("development"))
+    .expandDependency("config")
+    .supplyChain("hasChanges", hasChanges)
+    .effect(({ autoStashEnabled, hasChanges }) => {
+        return autoStashEnabled 
+            ? hasChanges 
+                ? stashBranch.chain(printLn)
+                : printLn("Branch has no changes")
+            : printLn("Autostash is disabled")
+    })
+    .supplyChain("currentBranch", getCurrentBranch)
+    .accessEffect("baseBranch", switchBranch)
+    .effect(({ pullOptions }) => pullBranch(...(pullOptions === "default" ? [] : ["--rebase"])))
+    .accessEffect("currentBranch", switchBranch)
+    .accessChain("baseBranch", rebaseBranch)
 
 export default AutoUpdate
