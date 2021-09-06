@@ -2,6 +2,9 @@ import Either from '../core/either.mod.ts'
 import { printRunMessage } from '../core/io-helpers.mod.ts'
 import { getCurrentBranch, gitCmd } from "../core/git-helpers.mod.ts"
 import { IOProcess, Command, CommandEnv } from '../core/command.mod.ts'
+import { CommitConfig } from "../core/configuration.mod.ts"
+
+const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]*`)
 
 const commitCmd = (msg: string) => gitCmd("commit", "-m", msg)
 
@@ -15,27 +18,32 @@ const validateMessage = (message: string) => {
         ).toIOPromise()
 }
 
-const validateBranch = (branch: string) => {
+const validateBranch = (ticketToken: string) => (branch: string) => {
     return Either
-        .fromPredicate(x => /DITYS-[0-9]*/.test(x), branch)
+        .fromPredicate(x => TicketRegExp(ticketToken).test(x), branch)
         .mapLeft(() => "Branch is not a feature branch")
         .toIOPromise()
 }
 
-const findTicketName = (str: string) => {
-    return Either.of(str.match(/DITYS-[0-9]*/))
+const findTicketName = (ticketToken: string) => (str: string) => {
+    return Either.of(str.match(TicketRegExp(ticketToken)))
         .chain(matches => Either.of(matches[0]))
         .mapLeft(() => "Couldn't get ticket name")
         .toIOPromise()
 }
 
-const prepare = ({ args }: CommandEnv) => ({ message: args.join(" ") })
 
-const AutoCommit: Command<string> = Command.ask().map(prepare).chain(({ message }) => {
+const AutoCommit: Command<CommitConfig,string> = Command
+    .ask<CommitConfig>()
+    .map(({ args, config }) => ({ 
+        message: args.join(" "),
+        ...config,
+    }))
+    .chain(({ message, ticketToken }) => {
     return validateMessage(message)
         .sequence(getCurrentBranch)
-        .chain(validateBranch)
-        .chain(findTicketName)
+        .chain(validateBranch(ticketToken))
+        .chain(findTicketName(ticketToken))
         .map((ticket) => commitCmd(`${ticket}: ${message}`))
         .effect(printRunMessage)
         .chain(IOProcess.of)

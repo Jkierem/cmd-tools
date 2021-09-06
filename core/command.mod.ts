@@ -1,6 +1,7 @@
 import IOPromise from './io-promise.mod.ts'
 import Maybe from './maybe.mod.ts'
 import { decode } from "./decode.mod.ts"
+import { EmptyConfig } from "./configuration.mod.ts"
 
 const decodeOrEmpty = (uint: Uint8Array) => Maybe.fromEmpty(uint).map(decode).onNone('')
 
@@ -23,18 +24,17 @@ export const IOProcess = {
     of: IOPromise.unary(denoProc),
 }
 
+export type CommandEmptyConfig = EmptyConfig
+
 export type CommandResult<T> = T | never
 
-export type CommandConfig = {}
+export type CommandEnv<T = EmptyConfig> = { args: string[], config: T }
 
-export type CommandEnv = { args: string[], config: CommandConfig }
-
-export type Command<A> = IOPromise<CommandEnv,CommandResult<A>>
+export type Command<Env,A> = IOPromise<CommandEnv<Env>,CommandResult<A>>
 
 export const Command = {
-    of: <A>(fn: (env: CommandEnv) => Promise<A>): Command<A> => IOPromise.of(fn),
-    ask: () => IOPromise.of<CommandEnv, CommandEnv>(x => Promise.resolve(x)),
-    pure: (): Command<CommandEnv> => IOPromise.of(x => Promise.resolve(x)),
-    fail: <T>(cause: T) => IOPromise.fail(cause) as Command<never>,
-    succeed: <T>(value: T) => IOPromise.succeed(value) as Command<T>,
+    ask: <T = EmptyConfig>() => IOPromise.require<CommandEnv<T>>(),
+    pure: <T = EmptyConfig>(): Command<T, CommandEnv<T>> => IOPromise.require<CommandEnv<T>>(),
+    fail: <T>(cause: T) => IOPromise.fail(cause) as Command<unknown,never>,
+    succeed: <T>(value: T) => IOPromise.succeed(value) as Command<unknown,T>,
 }
