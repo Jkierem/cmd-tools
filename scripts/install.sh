@@ -14,6 +14,6 @@ then
 fi
 echo "" | tee -a "$BASH_FILE" > /dev/null
 echo "export CUSTOM_CMD_TOOLS=$CUSTOM_CMD_TOOLS" | tee -a "$BASH_FILE" > /dev/null
-echo "alias auto=\"deno run --allow-run --allow-read --allow-write \$CUSTOM_CMD_TOOLS/runner.ts\"" | tee -a "$BASH_FILE" > /dev/null
+echo "alias auto=\"\$CUSTOM_CMD_TOOLS/bin/runner\"" | tee -a "$BASH_FILE" > /dev/null
 echo "Added definitions to $BASH_FILE"
 echo "Restart console to use cmd-tools"

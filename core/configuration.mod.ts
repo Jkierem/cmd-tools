@@ -2,6 +2,7 @@ import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/p
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
 import { decode } from "./decode.mod.ts"
+import { readFile, writeFile } from "./io-helpers.mod.ts"
 
 export type UpdateConfig = {
     baseBranch: string,
@@ -28,10 +29,6 @@ type ValueOf<T> = T extends Record<infer _, infer Value> ? Value : never
 export type Config = ValueOf<ConfigFile>
 
 export type EmptyConfig = Record<string,never>
-
-const readFile = (path: string) => IOPromise.of(() => Deno.readFile(path))
-
-const writeFile = (path: string, data: string) => IOPromise.of(() => Deno.writeTextFile(path, data))
 
 const parseConfig = (str: string) => Either
     .attempt(() => JSON.parse(str) as ConfigFile)

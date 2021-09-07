@@ -1,4 +1,5 @@
 import AutoCommit from "./commands/auto-commit.mod.ts"
+import Build from "./commands/build.mod.ts"
 import SmartMove from "./commands/smart-move.mod.ts"
 import NewBranch from "./commands/new-branch.mod.ts"
 import AutoUpdate from "./commands/auto-update.mod.ts"
@@ -23,7 +24,8 @@ const pickCommand = IOPromise
             branch: NewBranch,
             move: SmartMove,
             update: AutoUpdate,
-            config: ConfigCommand
+            config: ConfigCommand,
+            build: Build
         }[command] ?? NoOp(command)
         return cmd.supply({ args, config })
     })
@@ -37,7 +39,6 @@ const logError = onConsole("error")
 
 getConfig
 .accessChain("config",(config) => pickCommand.supply({ config }))
-.supply({ command, fileUrl: import.meta.url, args: commandArgs })
-.run({})
+.run({ command, fileUrl: import.meta.url, args: commandArgs })
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

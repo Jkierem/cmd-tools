@@ -23,6 +23,9 @@ type IOPromise<Env,A> = {
     accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
+    // deno-lint-ignore no-explicit-any
+    catchError: () => IOPromise<Env,any>,
+    ignore: () => IOPromise<Env,undefined>,
     run: (env: Env) => Promise<A>
 }
 
@@ -62,6 +65,14 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         },
         provideTo<B>(io: IOPromise<A,B>){
             return this.chain(a => io.supply(a) as IOPromise<unknown,B>)
+        },
+        catchError: () => {
+            return succeed(async (e) => {
+                try { return await run(e) } catch(err) { return err }
+            })
+        },
+        ignore(){
+            return this.catchError().mapTo(undefined)
         }
     }
 }

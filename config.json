@@ -1,1 +1,1 @@
-{"update":{"baseBranch":"development","pullOptions":"default","autoStashEnabled":"true"},"commit":{"ticketToken":"-"},"branch":{"branchPrefix":"DITYS","joinChar":"-"}}
+{"update":{"baseBranch":"development","pullOptions":"default","autoStashEnabled":"true"},"commit":{"ticketToken":"DITYS"},"branch":{"branchPrefix":"DITYS","joinChar":"-"}}

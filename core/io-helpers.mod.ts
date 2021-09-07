@@ -17,3 +17,7 @@ export const doDefaultConfirm = doConfirm("Are you sure?")
 export const printLn = IOPromise.through(console.log);
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
+
+export const readFile = (path: string) => IOPromise.of(() => Deno.readFile(path))
+
+export const writeFile = (path: string, data: string) => IOPromise.of(() => Deno.writeTextFile(path, data))
