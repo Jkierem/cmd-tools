@@ -1,7 +1,7 @@
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
-import IOPromise from "../core/io-promise.mod.ts"
+// import IOPromise from "../core/io-promise.mod.ts"
 import AutoCommit from "../commands/auto-commit.mod.ts"
-import type { FileIO } from "../core/io-helpers.mod.ts"
+import type { FileIO, ConsoleService } from "../core/io-helpers.mod.ts"
 import { encode } from "../core/codec.mod.ts"
 
 const MockRunner = {
@@ -28,13 +28,22 @@ const MockFileIO: FileIO = {
     }
 }
 
-Deno.test("Lets try", async () => {
+const MockConsole: ConsoleService = {
+    log: (...args) => { console.log("Received: ", args) },
+    prompt: (msg: string) => {
+        console.log("Prompt: ",msg)
+        return "no"
+    }
+}
+
+Deno.test("AutoCommit", async () => {
     const res = await AutoCommit
         .run({
             args: ["hey ho"],
             config: { ticketToken: "J" },
             runner: MockRunner,
-            fileIO: MockFileIO
+            fileIO: MockFileIO,
+            console: MockConsole,
         })
     console.log(res)
     assertEquals(res, "Test complete")

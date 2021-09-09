@@ -1,7 +1,19 @@
 import IOPromise from './io-promise.mod.ts'
 import Either from './either.mod.ts'
 
-export const doPrompt = IOPromise.unary(prompt)
+export type ConsoleService = {
+    log: <T>(...args: T[]) => void,
+    prompt: (message: string) => string | null,
+}
+
+export const LiveConsole: ConsoleService = {
+    log: console.log,
+    prompt: (msg: string) => prompt(msg)
+}
+
+export const doPrompt = (message: string) => IOPromise
+    .require<{ console: ConsoleService }>()
+    .accessChain("console", (c) => IOPromise.from(() => c.prompt(message)))
 
 export const doPromptOr = (msg: string, def: string) => 
     doPrompt(`${msg} (${def})`)

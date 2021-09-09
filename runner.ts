@@ -9,7 +9,7 @@ import IOPromise  from "./core/io-promise.mod.ts"
 import { Command } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
 import { LiveProcess } from "./core/io-process.mod.ts"
-import { LiveFileIO } from "./core/io-helpers.mod.ts"
+import { LiveFileIO, LiveConsole } from "./core/io-helpers.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 
@@ -48,7 +48,8 @@ getConfig
     fileUrl: import.meta.url, 
     args: commandArgs ,
     runner: LiveProcess,
-    fileIO: LiveFileIO
+    fileIO: LiveFileIO,
+    console: LiveConsole,
 })
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))
