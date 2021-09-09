@@ -12,7 +12,7 @@ import { UpdateConfig } from "../core/configuration.mod.ts"
 
 const AutoUpdate: Command<UpdateConfig,string> = Command
     .ask<UpdateConfig>()
-    .expandDependency("config")
+    .openDependency("config")
     .supplyChain("hasChanges", hasChanges)
     .effect(({ autoStashEnabled, hasChanges }) => {
         return autoStashEnabled === "true" 

@@ -1,7 +1,8 @@
 import Either from '../core/either.mod.ts'
+import IOProcess from "../core/io-process.mod.ts"
 import { printRunMessage } from '../core/io-helpers.mod.ts'
 import { getCurrentBranch, gitCmd } from "../core/git-helpers.mod.ts"
-import { IOProcess, Command } from '../core/command.mod.ts'
+import { Command } from '../core/command.mod.ts'
 import { CommitConfig } from "../core/configuration.mod.ts"
 
 const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]*`)
@@ -35,10 +36,10 @@ const findTicketName = (ticketToken: string) => (str: string) => {
 
 const AutoCommit: Command<CommitConfig,string> = Command
     .ask<CommitConfig>()
-    .expandDependency("config")
-    .map(({ args, config }) => ({ 
+    .openDependency("config")
+    .map(({ args, ticketToken }) => ({ 
         message: args.join(" "),
-        ...config,
+        ticketToken,
     }))
     .chain(({ message, ticketToken }) => {
         return validateMessage(message)

@@ -1,6 +1,6 @@
-import { getAllBranches, switchBranch } from "../core/git-helpers.mod.ts"
-import { Command, CommandEnv } from '../core/command.mod.ts'
 import Either from '../core/either.mod.ts'
+import { Command, CommandEnv } from '../core/command.mod.ts'
+import { getAllBranches, switchBranch } from "../core/git-helpers.mod.ts"
 
 const getHint = ({ args }: CommandEnv) =>  Either.of(args[0]).mapLeftTo("No branch hint passed").toIOPromise()
 

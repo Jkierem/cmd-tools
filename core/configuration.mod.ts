@@ -1,7 +1,7 @@
 import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/path/mod.ts";
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
-import { decode, encode } from "./decode.mod.ts"
+import { decode, encode } from "./codec.mod.ts"
 import { readFile, writeFile } from "./io-helpers.mod.ts"
 
 export type UpdateConfig = {

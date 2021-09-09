@@ -1,10 +1,6 @@
 type UnwrapPromise<A> = A extends Promise<infer B> ? B : A
-type InferUndefined<T> = T extends Record<string,never> ? undefined : T 
-type Remove<Key extends string | number | symbol, T> = InferUndefined<Omit<T,Key>>
 type Key = string | number | symbol
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
-
-type Reason<T> = { reason: T, error: true }
 
 type IOPromise<Env,A> = {
     map: <B>(fn: (a: A) => B) => IOPromise<Env,B>,
@@ -22,6 +18,8 @@ type IOPromise<Env,A> = {
     supply: <T>(reqs: T) => IOPromise<Omit<Env,keyof T>,A>,
     supplyChain: <B, K extends Key>(key: K, io: IOPromise<A,B>) => IOPromise<Env, A & { [P in typeof key]: B }>,
     expandDependency: <K extends keyof A>(key: K) => IOPromise<Env, A & A[K]>,
+    dropDependency: <K extends keyof A>(key: K) => IOPromise<Env, Omit<A,K>>,
+    openDependency: <K extends keyof A>(key: K) => IOPromise<Env, Omit<A & A[K],K>>,
     accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
@@ -30,6 +28,7 @@ type IOPromise<Env,A> = {
     onError: <B>(fn: () => B) => IOPromise<Env, A|B>,
     mapErrorTo: <B>(a: B) => IOPromise<Env, A | B>,
     ignore: () => IOPromise<Env,undefined>,
+    // deno-lint-ignore no-explicit-any
     recover: <B>(onErr: (err: any) => IOPromise<unknown, B>) => IOPromise<Env,A | B>,
     run: (env: Env) => Promise<A>
 }
@@ -62,6 +61,13 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         expandDependency(key){
             return this.map((x) => ({...x, ...x[key]}))
         },
+        dropDependency(key){
+            return this.map((x) => {
+                delete x[key]
+                return x
+            })
+        },
+        openDependency(key){ return this.expandDependency(key).dropDependency(key) },
         accessEffect<K extends keyof A, B>(key: K, io: (a: A[K]) => IOPromise<unknown, B>){
             return this.chain(data => this.access(key).effect(io).mapTo(data))
         },

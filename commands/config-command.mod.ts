@@ -1,6 +1,6 @@
 import IOPromise from "../core/io-promise.mod.ts"
-import { Command } from "../core/command.mod.ts"
 import Either from "../core/either.mod.ts"
+import { Command } from "../core/command.mod.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.mod.ts"
 
 const actions = ["get", "set"]
@@ -50,7 +50,6 @@ const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): voi
     }
 }
 
-type Defined<T> = Exclude<T, null | undefined>
 type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string }
 const validateSet = ({ key, value, configData }: SetEnv) => {
     const fromNullish = Either.ofPredicate(<T>(x: T): x is T  => x !== null && x !== undefined)
@@ -81,7 +80,7 @@ const pickAction = (action: string) => action === "get" ? GetAction : SetAction
 
 const ConfigCommand = Command
     .ask<{ fileUrl: string }>()
-    .expandDependency("config")
+    .openDependency("config")
     .map(({ args, fileUrl }) => ({ 
         action: args[0], 
         key:    args[1], 

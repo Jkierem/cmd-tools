@@ -4,7 +4,7 @@ import { setConfig, ConfigFile } from "../core/configuration.mod.ts"
 
 const InitConfig = Command
     .ask<{ fileUrl: string }>()
-    .expandDependency("config")
+    .openDependency("config")
     .supplyChain("ticketToken", doPromptOr("What branch token are you using?","DITYS"))
     .supplyChain("branchPrefix", doPromptOr("What is the prefix for commits?","DITYS"))
     .supplyChain("baseBranch", doPromptOr("What is the base branch?","development"))

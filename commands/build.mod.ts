@@ -1,6 +1,7 @@
 import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/path/mod.ts";
 import IOPromise from "../core/io-promise.mod.ts"
-import { IOProcess, Command } from "../core/command.mod.ts"
+import IOProcess from "../core/io-process.mod.ts"
+import { Command } from "../core/command.mod.ts"
 import { doDefaultConfirm, printLn, writeFile } from "../core/io-helpers.mod.ts"
 
 const resolveFolder = (fileUrl: string) => normalize(dirname(fromFileUrl(fileUrl)));
@@ -14,7 +15,7 @@ const Build = Command
     .ask<{ fileUrl: string }>()
     .zipLeft(printLn("You are about to delete the bin folder and create a new build."))
     .zipLeft(doDefaultConfirm)
-    .expandDependency("config")
+    .openDependency("config")
     .access("fileUrl")
     .map(resolveFolder)
     .map(folder => `${folder}/bin`)
