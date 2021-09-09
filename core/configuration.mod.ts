@@ -1,7 +1,7 @@
 import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/path/mod.ts";
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
-import { decode } from "./decode.mod.ts"
+import { decode, encode } from "./decode.mod.ts"
 import { readFile, writeFile } from "./io-helpers.mod.ts"
 
 export type UpdateConfig = {
@@ -42,7 +42,7 @@ export const getAllConfig = IOPromise
     .require<{ fileUrl: string }>()
     .access("fileUrl")
     .map(getConfigPath)
-    .chain(readFile)
+    .chain(path => readFile(path).onError(() => encode("{}")))
     .map(decode)
     .chain(parseConfig)
 
