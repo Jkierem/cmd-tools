@@ -3,11 +3,32 @@ import Either from './either.mod.ts'
 
 export const doPrompt = IOPromise.unary(prompt)
 
+export type Bias = { 
+    answers: readonly [string, string], 
+    suffix: string, 
+    default: "yes" | "no",
+    normalize: "yes" | "no"
+}
+
+export const Bias: Record<"Yes"|"No",Bias> = {
+    No: { answers: ["y", "yes"] as const, suffix: "[y|N]", default: "no", normalize: "yes" },
+    Yes: { answers: ["n", "no"] as const, suffix: "[Y|n]", default: "yes", normalize: "no" }
+}
+
+export const doBiasConfirm = (msg: string, bias=Bias.Yes) =>
+    doPrompt(`${msg} ${bias.suffix}`)
+        .map(str => str?.trim() ?? "")
+        .map(toLowerCase)
+        .map(str => str || bias.default)
+        .map(str => bias.answers.includes(str) ? bias.normalize : bias.default)
+
+export const doBooleanConfirm = (msg: string, bias=Bias.Yes) => doBiasConfirm(msg, bias).map(x => x === "yes")
+
+const toLowerCase = <T extends string>(str: T): Lowercase<T> => str.toLowerCase() as Lowercase<T>
 export const doConfirm = (msg: string) => 
-    doPrompt(`${msg} [y|N]`).chain((str) => {
+    doBiasConfirm(msg, Bias.No).chain((str) => {
         return Either.of(str)
-            .map(str => str.toLowerCase())
-            .chain(Either.ofPredicate(s => s === "y" || s === "yes"))
+            .chain(Either.ofPredicate<"no","yes">((s: "yes" | "no"): s is "yes" => s === "yes"))
             .mapLeft(() => "Responded negative to confirmation")
             .toIOPromise()
     })

@@ -25,6 +25,7 @@ type IOPromise<Env,A> = {
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
     // deno-lint-ignore no-explicit-any
     catchError: () => IOPromise<Env,any>,
+    onError: <B>(fn: () => B) => IOPromise<Env, A|B>,
     ignore: () => IOPromise<Env,undefined>,
     run: (env: Env) => Promise<A>
 }
@@ -69,6 +70,11 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         catchError: () => {
             return succeed(async (e) => {
                 try { return await run(e) } catch(err) { return err }
+            })
+        },
+        onError: (fn) => {
+            return succeed(async (e) => {
+                try { return await run(e) } catch { return fn() }
             })
         },
         ignore(){

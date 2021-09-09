@@ -42,10 +42,8 @@ const Left = <Left,Right>(x: Left): Either<Left,Right> => {
 
 const Either = {
     of: <T>(x: T) => (x ? Right(x) : Left(x)) as Either<T,NonNullable<T>>,
-    fromPredicate: <T>(pred: (x: T) => boolean, x: T) => Either.of(pred(x))
-        .mapTo(x)
-        .mapLeftTo(x),
-    ofPredicate: <T>(pred: (x: T) => boolean) => (x: T) => Either.fromPredicate(pred,x),
+    fromPredicate: <T>(pred: (x: T) => boolean, x: T) => Either.of(pred(x)).mapTo(x).mapLeftTo(x),
+    ofPredicate: <L,R>(pred: (x: L | R) => x is R) => (x: L | R) => pred(x) ? Right<L,R>(x) : Left<L,R>(x),
     Left,
     Right,
     attempt: <T>(fn: () => T) => {
@@ -56,5 +54,7 @@ const Either = {
         }
     }
 }
+
+export type EitherCons<Arg,Left,Right> = (x: Arg) => Either<Left,Right> 
 
 export default Either

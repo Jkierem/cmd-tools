@@ -1,9 +1,10 @@
 import AutoCommit from "./commands/auto-commit.mod.ts"
-import Build from "./commands/build.mod.ts"
-import SmartMove from "./commands/smart-move.mod.ts"
-import NewBranch from "./commands/new-branch.mod.ts"
 import AutoUpdate from "./commands/auto-update.mod.ts"
+import Build from "./commands/build.mod.ts"
 import ConfigCommand from "./commands/config-command.mod.ts"
+import InitConfig from "./commands/init-config.mod.ts"
+import NewBranch from "./commands/new-branch.mod.ts"
+import SmartMove from "./commands/smart-move.mod.ts"
 import IOPromise from "./core/io-promise.mod.ts"
 import { Command } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
@@ -25,7 +26,8 @@ const pickCommand = IOPromise
             move: SmartMove,
             update: AutoUpdate,
             config: ConfigCommand,
-            build: Build
+            build: Build,
+            init: InitConfig,
         }[command] ?? NoOp(command)
         return cmd.supply({ args, config })
     })

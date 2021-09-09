@@ -8,7 +8,6 @@ const rmrf = IOPromise.require<{ path: string }>().map(({ path }) => ["rm","-r",
 const mkDir = IOPromise.require<{ name: string }>().map(({ name }) => ["mkdir",name]).chain(IOProcess.of)
 const touch = IOPromise.require<{ file: string }>().map(({ file }) => ["touch",file]).chain(IOProcess.of)
 const chmod = IOPromise.require<{ file: string }>().map(({ file }) => ["chmod","754",file]).chain(IOProcess.of)
-
 const buildContent = `#!/bin/sh\ndeno run --allow-read --allow-write --allow-run $CUSTOM_CMD_TOOLS/runner.ts "$@"`
 
 const Build = Command

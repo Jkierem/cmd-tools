@@ -50,11 +50,12 @@ const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): voi
     }
 }
 
+type Defined<T> = Exclude<T, null | undefined>
 type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string }
 const validateSet = ({ key, value, configData }: SetEnv) => {
-    const fromNullish = Either.ofPredicate(x => x !== null && x !== undefined)
-    const fromEmpty = Either.ofPredicate((x: string) => x.length !== 0)
-    const fromString = Either.ofPredicate(x => typeof x === "string")
+    const fromNullish = Either.ofPredicate(<T>(x: T): x is T  => x !== null && x !== undefined)
+    const fromEmpty = Either.ofPredicate((x: string): x is string => x.length !== 0)
+    const fromString = Either.ofPredicate((x: string | undefined): x is string => typeof x === "string")
     return fromNullish(getPath(key,configData))
         .mapLeftTo(`"${key}" is not a config option`)
         .chain((p) => fromString(p).mapLeftTo("Value being set must be a leaf value"))
