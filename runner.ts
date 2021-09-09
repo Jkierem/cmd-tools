@@ -8,8 +8,7 @@ import SmartMove from "./commands/smart-move.mod.ts"
 import IOPromise  from "./core/io-promise.mod.ts"
 import { Command } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
-import { LiveProcess } from "./core/io-process.mod.ts"
-import { LiveFileIO, LiveConsole } from "./core/io-helpers.mod.ts"
+import { LiveProcess, LiveFileIO, LiveConsole } from "./core/services.live.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 

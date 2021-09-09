@@ -1,15 +1,6 @@
 import IOPromise from './io-promise.mod.ts'
 import Either from './either.mod.ts'
-
-export type ConsoleService = {
-    log: <T>(...args: T[]) => void,
-    prompt: (message: string) => string | null,
-}
-
-export const LiveConsole: ConsoleService = {
-    log: console.log,
-    prompt: (msg: string) => prompt(msg)
-}
+import type { ConsoleService, FileIO } from "./services.mod.ts"
 
 export const doPrompt = (message: string) => IOPromise
     .require<{ console: ConsoleService }>()
@@ -57,16 +48,6 @@ export const printLn = <T>(...args: T[]) => IOPromise
     .chain(({ console }) => IOPromise.through(console.log)(...args))
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
-
-export type FileIO = {
-    read: (path: string) => Promise<Uint8Array>,
-    write: (path: string, data: string) => Promise<void>
-}
-
-export const LiveFileIO: FileIO = {
-    read: Deno.readFile,
-    write: Deno.writeTextFile
-}
 
 export const readFile = (path: string) => IOPromise
     .require<{ fileIO: FileIO }>()

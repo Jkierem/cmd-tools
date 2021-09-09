@@ -2,7 +2,7 @@ import IOPromise from "../core/io-promise.mod.ts"
 import Either from "../core/either.mod.ts"
 import { Command } from "../core/command.mod.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.mod.ts"
-import type { FileIO } from "../core/io-helpers.mod.ts"
+import type { FileIO } from "../core/services.mod.ts"
 
 const actions = ["get", "set"]
 const validateAction = (action: string) => {

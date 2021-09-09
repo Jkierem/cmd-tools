@@ -1,7 +1,8 @@
 import IOProcess from './io-process.mod.ts'
 import IOPromise from "./io-promise.mod.ts"
 import Either from './either.mod.ts'
-import { printRunMessage, printLn, ConsoleService } from "./io-helpers.mod.ts"
+import { printRunMessage, printLn } from "./io-helpers.mod.ts"
+import type { ConsoleService } from "./services.mod.ts"
 
 export const gitCmd = (...args: string[]) => ["git",...args]
 

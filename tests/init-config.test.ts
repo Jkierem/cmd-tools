@@ -1,10 +1,9 @@
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
-// import IOPromise from "../core/io-promise.mod.ts"
 import AutoCommit from "../commands/auto-commit.mod.ts"
-import type { FileIO, ConsoleService } from "../core/io-helpers.mod.ts"
+import type { ProcessRunner, FileIO, ConsoleService } from "../core/services.mod.ts"
 import { encode } from "../core/codec.mod.ts"
 
-const MockRunner = {
+const MockRunner: ProcessRunner = {
     run: (cmd: string[]) => {
         console.log(cmd)
         if( cmd.includes("status") ){
@@ -29,7 +28,7 @@ const MockFileIO: FileIO = {
 }
 
 const MockConsole: ConsoleService = {
-    log: (...args) => { console.log("Received: ") },
+    log: (..._args) => { console.log("Received: ") },
     prompt: (msg: string) => {
         console.log("Prompt: ",msg)
         return "no"
