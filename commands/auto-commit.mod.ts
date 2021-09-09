@@ -37,18 +37,19 @@ const findTicketName = (ticketToken: string) => (str: string) => {
 const AutoCommit: Command<CommitConfig,string> = Command
     .ask<CommitConfig>()
     .openDependency("config")
-    .map(({ args, ticketToken, runner }) => ({ 
+    .map(({ args, ticketToken, runner, console }) => ({ 
         message: args.join(" "),
         ticketToken,
         runner,
+        console,
     }))
-    .chain(({ message, ticketToken, runner }) => {
+    .chain(({ message, ticketToken, runner, console }) => {
         return validateMessage(message)
             .zipRight(getCurrentBranch.supply({ runner }))
             .chain(validateBranch(ticketToken))
             .chain(findTicketName(ticketToken))
             .map((ticket) => commitCmd(`${ticket}: ${message}`))
-            .effect(printRunMessage)
+            .effect(msg => printRunMessage(msg).supply({ console }))
             .chain(cmd => IOProcess.of(cmd).supply({ runner }))
     })
 

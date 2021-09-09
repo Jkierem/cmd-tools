@@ -29,7 +29,7 @@ const MockFileIO: FileIO = {
 }
 
 const MockConsole: ConsoleService = {
-    log: (...args) => { console.log("Received: ", args) },
+    log: (...args) => { console.log("Received: ") },
     prompt: (msg: string) => {
         console.log("Prompt: ",msg)
         return "no"

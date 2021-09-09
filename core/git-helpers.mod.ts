@@ -1,7 +1,7 @@
 import IOProcess from './io-process.mod.ts'
 import IOPromise from "./io-promise.mod.ts"
 import Either from './either.mod.ts'
-import { printRunMessage, printLn } from "./io-helpers.mod.ts"
+import { printRunMessage, printLn, ConsoleService } from "./io-helpers.mod.ts"
 
 export const gitCmd = (...args: string[]) => ["git",...args]
 
@@ -27,25 +27,29 @@ export const getAllBranches = IOProcess
 
 export const switchBranch = (branch: string) => {
     return IOPromise
-        .succeed(gitCmd("switch",branch))
+        .require<{ console: ConsoleService }>()
+        .mapTo(gitCmd("switch",branch))
         .effect(printRunMessage)
         .chain(IOProcess.of)
 }
 
 export const pullBranch = (...pullOpts: string[]) => IOPromise
-    .succeed(gitCmd("pull",...pullOpts))
+    .require<{ console: ConsoleService }>()
+    .mapTo(gitCmd("pull",...pullOpts))
     .effect(printRunMessage)
     .chain(IOProcess.of)
     .effect(printLn)
 
 export const rebaseBranch = (base: string) => {
     return IOPromise
-        .succeed(gitCmd("rebase",base))
+        .require<{ console: ConsoleService }>()
+        .mapTo(gitCmd("rebase",base))
         .effect(printRunMessage)
         .chain(IOProcess.of)
 }
 
 export const stashBranch = IOPromise
-    .succeed(gitCmd("stash","push","-m",'"auto-stashing current branch"'))
+    .require<{ console: ConsoleService }>()
+    .mapTo(gitCmd("stash","push","-m",'"auto-stashing current branch"'))
     .effect(printRunMessage)
     .chain(IOProcess.of)

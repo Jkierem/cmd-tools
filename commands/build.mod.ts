@@ -26,11 +26,11 @@ const Build = Command
         .map(x => x.trim())
         .chain(printLn)
     )
-    .effect((name) => mkDir.supply({ name }).sequence(printLn("Created bin folder")))
+    .effect((name) => mkDir.supply({ name }).zip(printLn("Created bin folder")))
     .map(folder => `${folder}/runner`)
-    .effect((file) => touch.supply({ file }).sequence(printLn("Created runner file")))
-    .effect((file) => writeFile(file,buildContent).sequence(printLn("Added file contents")))
-    .chain((file) => chmod.supply({ file }).sequence(printLn("Added run permissions")))
+    .effect((file) => touch.supply({ file }).zip(printLn("Created runner file")))
+    .effect((file) => writeFile(file,buildContent).zip(printLn("Added file contents")))
+    .chain((file) => chmod.supply({ file }).zip(printLn("Added run permissions")))
     .mapTo("Build finished")
 
 export default Build

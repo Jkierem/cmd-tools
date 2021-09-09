@@ -52,7 +52,9 @@ export const doConfirm = (msg: string) =>
 
 export const doDefaultConfirm = doConfirm("Are you sure?")
 
-export const printLn = IOPromise.through(console.log);
+export const printLn = <T>(...args: T[]) => IOPromise
+    .require<{ console: ConsoleService }>()
+    .chain(({ console }) => IOPromise.through(console.log)(...args))
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
 
