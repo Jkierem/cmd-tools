@@ -2,7 +2,7 @@ import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/p
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
 import { decode, encode } from "./codec.mod.ts"
-import { readFile, writeFile } from "./io-helpers.mod.ts"
+import { readFile, writeFile, FileIO } from "./io-helpers.mod.ts"
 
 export type UpdateConfig = {
     baseBranch: string,
@@ -50,7 +50,7 @@ export const getAllConfig = IOPromise
 const getOr = <T,F>(key: string, fallback: F, obj: T) => obj?.[key as keyof T] ?? fallback
 
 export const getConfig = IOPromise
-    .require<{ command: string, fileUrl: string }>()
+    .require<{ command: string, fileUrl: string, fileIO: FileIO }>()
     .effect(({ fileUrl, command }) => {
         return Either
         .of(command === "init")

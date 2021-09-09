@@ -1,12 +1,18 @@
 import IOPromise from './io-promise.mod.ts'
-import type { ProcessRunner } from "./io-process.mod.ts"
 import { EmptyConfig } from "./configuration.mod.ts"
+import type { ProcessRunner } from "./io-process.mod.ts"
+import type { FileIO } from "./io-helpers.mod.ts"
 
 export type CommandEmptyConfig = EmptyConfig
 
 export type CommandResult<T> = T | never
 
-export type CommandEnv<T = EmptyConfig> = { args: string[], config: T, runner: ProcessRunner }
+export type CommandEnv<T = EmptyConfig> = { 
+    args: string[], 
+    config: T, 
+    runner: ProcessRunner,
+    fileIO: FileIO,
+}
 
 export type Command<Env,A> = IOPromise<CommandEnv<Env>,CommandResult<A>>
 

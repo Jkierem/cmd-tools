@@ -1,6 +1,5 @@
 type UnwrapPromise<A> = A extends Promise<infer B> ? B : A
 type Key = string | number | symbol
-// deno-lint-ignore ban-types
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
 
 type IOPromise<Env,A> = {

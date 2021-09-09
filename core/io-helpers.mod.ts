@@ -44,16 +44,20 @@ export const printLn = IOPromise.through(console.log);
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
 
-export type FileHandler = {
+export type FileIO = {
     read: (path: string) => Promise<Uint8Array>,
     write: (path: string, data: string) => Promise<void>
 }
 
-export const LiveFileHandler: FileHandler = {
+export const LiveFileIO: FileIO = {
     read: Deno.readFile,
     write: Deno.writeTextFile
 }
 
-export const readFile = (path: string) => IOPromise.of(() => Deno.readFile(path))
+export const readFile = (path: string) => IOPromise
+    .require<{ fileIO: FileIO }>()
+    .chain(({ fileIO }) => IOPromise.of(() => fileIO.read(path)))
 
-export const writeFile = (path: string, data: string) => IOPromise.of(() => Deno.writeTextFile(path, data))
+export const writeFile = (path: string, data: string) => IOPromise
+    .require<{ fileIO: FileIO }>()
+    .chain(({ fileIO }) => IOPromise.of(() => fileIO.write(path,data)))

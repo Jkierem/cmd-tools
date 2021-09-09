@@ -2,6 +2,7 @@ import IOPromise from "../core/io-promise.mod.ts"
 import Either from "../core/either.mod.ts"
 import { Command } from "../core/command.mod.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.mod.ts"
+import type { FileIO } from "../core/io-helpers.mod.ts"
 
 const actions = ["get", "set"]
 const validateAction = (action: string) => {
@@ -50,7 +51,7 @@ const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): voi
     }
 }
 
-type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string }
+type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string, fileIO: FileIO }
 const validateSet = ({ key, value, configData }: SetEnv) => {
     const fromNullish = Either.ofPredicate(<T>(x: T): x is T  => x !== null && x !== undefined)
     const fromEmpty = Either.ofPredicate((x: string): x is string => x.length !== 0)
@@ -66,11 +67,12 @@ const validateSet = ({ key, value, configData }: SetEnv) => {
 const SetAction = IOPromise
     .require<SetEnv>()
     .effect(validateSet)
-    .map(({ key, value, configData, fileUrl }) => {
+    .map(({ key, value, configData, fileUrl, fileIO }) => {
         setPath(key, (value as unknown) as undefined, configData)
         return {
             fileUrl,
-            data: configData
+            data: configData,
+            fileIO
         }
     })
     .provideTo(setConfig)
@@ -81,16 +83,17 @@ const pickAction = (action: string) => action === "get" ? GetAction : SetAction
 const ConfigCommand = Command
     .ask<{ fileUrl: string }>()
     .openDependency("config")
-    .map(({ args, fileUrl, runner }) => ({ 
+    .map(({ args, fileUrl, runner, fileIO }) => ({ 
         action: args[0], 
         key:    args[1], 
         value:  args[2],
         fileUrl,
-        runner
+        runner,
+        fileIO
     }))
     .accessEffect("action", validateAction)
     .supplyChain("configData", getAllConfig)
-    .chain(({ action, key, value, configData, fileUrl }) => pickAction(action).supply({ key, value, configData, fileUrl }))
+    .chain(({ action, ...rest }) => pickAction(action).supply(rest))
 
 export default ConfigCommand
     

@@ -15,6 +15,7 @@ const InitConfig = Command
         baseBranch,
         ticketToken,
         fileUrl,
+        fileIO,
     }) => ({
         data: {
             branch: {
@@ -28,7 +29,8 @@ const InitConfig = Command
                 pullOptions: "default",
             },
         } as ConfigFile,
-        fileUrl
+        fileUrl,
+        fileIO
     }))
     .provideTo(setConfig)
     .mapTo("Generated config")
