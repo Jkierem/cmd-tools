@@ -46,6 +46,6 @@ export const rebaseBranch = (base: string) => {
 }
 
 export const stashBranch = IOPromise
-    .succeed(gitCmd("stash","-m",'"auto-stashing current branch"'))
+    .succeed(gitCmd("stash","push","-m",'"auto-stashing current branch"'))
     .effect(printRunMessage)
     .chain(IOProcess.of)
