@@ -4,6 +4,8 @@ type Remove<Key extends string | number | symbol, T> = InferUndefined<Omit<T,Key
 type Key = string | number | symbol
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
 
+type Reason<T> = { reason: T, error: true }
+
 type IOPromise<Env,A> = {
     map: <B>(fn: (a: A) => B) => IOPromise<Env,B>,
     mapTo: <B>(b: B) => IOPromise<Env,B>,
@@ -24,9 +26,11 @@ type IOPromise<Env,A> = {
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
     // deno-lint-ignore no-explicit-any
-    catchError: () => IOPromise<Env,any>,
+    catchError: () => IOPromise<Env, any>,
     onError: <B>(fn: () => B) => IOPromise<Env, A|B>,
+    mapErrorTo: <B>(a: B) => IOPromise<Env, A | B>,
     ignore: () => IOPromise<Env,undefined>,
+    recover: <B>(onErr: (err: any) => IOPromise<unknown, B>) => IOPromise<Env,A | B>,
     run: (env: Env) => Promise<A>
 }
 
@@ -69,16 +73,30 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         },
         catchError: () => {
             return succeed(async (e) => {
-                try { return await run(e) } catch(err) { return err }
+                try { return await run(e) } 
+                catch(err) { return err }
             })
         },
         onError: (fn) => {
             return succeed(async (e) => {
-                try { return await run(e) } catch { return fn() }
+                try { return await run(e) } 
+                catch { return fn() }
+            })
+        },
+        mapErrorTo: (a) => {
+            return succeed(async (e) => {
+                try { return await run(e) } 
+                catch { return a }
             })
         },
         ignore(){
             return this.catchError().mapTo(undefined)
+        },
+        recover(fn){
+            return succeed(async (e) => {
+                try { return await run(e) } 
+                catch(err) { return await fn(err).run(e) }
+            })
         }
     }
 }

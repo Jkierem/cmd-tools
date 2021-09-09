@@ -3,6 +3,11 @@ import Either from './either.mod.ts'
 
 export const doPrompt = IOPromise.unary(prompt)
 
+export const doPromptOr = (msg: string, def: string) => 
+    doPrompt(`${msg} (${def})`)
+    .map(x => x?.trim())
+    .map(x => x ? x : def)
+
 export type Bias = { 
     answers: readonly [string, string], 
     suffix: string, 

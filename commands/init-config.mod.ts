@@ -1,11 +1,6 @@
 import { Command } from "../core/command.mod.ts"
-import { doPrompt, doBooleanConfirm } from "../core/io-helpers.mod.ts"
+import { doPromptOr, doBooleanConfirm } from "../core/io-helpers.mod.ts"
 import { setConfig, ConfigFile } from "../core/configuration.mod.ts"
-
-const doPromptOr = (msg: string, def: string) => 
-    doPrompt(`${msg} (${def})`)
-    .map(x => x?.trim())
-    .map(x => x ? x : def)
 
 const InitConfig = Command
     .ask<{ fileUrl: string }>()

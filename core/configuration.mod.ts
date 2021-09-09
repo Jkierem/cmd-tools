@@ -37,12 +37,13 @@ const parseConfig = (str: string) => Either
 
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => fromFileUrl(normalize(relativeConfig(dirname(fileUrl))))
+const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
 
 export const getAllConfig = IOPromise
     .require<{ fileUrl: string }>()
     .access("fileUrl")
     .map(getConfigPath)
-    .chain(path => readFile(path).onError(() => encode("{}")))
+    .chain(path => readFile(path).mapErrorTo(encode("{}")))
     .map(decode)
     .chain(parseConfig)
 
@@ -50,6 +51,18 @@ const getOr = <T,F>(key: string, fallback: F, obj: T) => obj?.[key as keyof T] ?
 
 export const getConfig = IOPromise
     .require<{ command: string, fileUrl: string }>()
+    .effect(({ fileUrl, command }) => {
+        return Either
+        .of(command === "init")
+        .fold(
+            () => exists(getConfigPath(fileUrl)).chain(
+                available => available 
+                    ? IOPromise.unit
+                    : IOPromise.fail("Config file is not available. Try running 'auto init'")
+            ),
+            () => IOPromise.unit
+        )
+    })
     .supplyChain("config", getAllConfig)
     .map(({ command, config }) => ({ config: getOr(command, {}, config) }))
 
