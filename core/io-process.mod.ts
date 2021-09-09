@@ -17,10 +17,21 @@ const promisifyProcess = async <T extends Deno.RunOptions>(proc: Deno.Process<T>
     }
 }
 
-const denoProc = (cmd: string[]) => promisifyProcess(Deno.run({ cmd, stderr: "piped", stdout: "piped" }))
+export type ProcessRunner = {
+    run: (cmd: string[]) => Promise<string>
+}
+
+export const LiveProcess: ProcessRunner = {
+    run: (cmd: string[]) => promisifyProcess(Deno.run({ cmd, stderr: "piped", stdout: "piped"}))
+}
 
 const IOProcess = {
-    of: IOPromise.unary(denoProc),
+    of: (cmd: string[]) => {
+        return IOPromise
+            .require<{ runner: ProcessRunner }>()
+            .access("runner")
+            .chain(runner => IOPromise.of(() => runner.run(cmd)))
+    },
 }
 
 export default IOProcess

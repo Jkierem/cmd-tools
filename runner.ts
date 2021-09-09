@@ -5,9 +5,10 @@ import ConfigCommand from "./commands/config-command.mod.ts"
 import InitConfig from "./commands/init-config.mod.ts"
 import NewBranch from "./commands/new-branch.mod.ts"
 import SmartMove from "./commands/smart-move.mod.ts"
-import IOPromise from "./core/io-promise.mod.ts"
+import IOPromise  from "./core/io-promise.mod.ts"
 import { Command } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
+import { LiveProcess } from "./core/io-process.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 
@@ -41,6 +42,11 @@ const logError = onConsole("error")
 
 getConfig
 .accessChain("config",(config) => pickCommand.supply({ config }))
-.run({ command, fileUrl: import.meta.url, args: commandArgs })
+.run({ 
+    command, 
+    fileUrl: import.meta.url, 
+    args: commandArgs ,
+    runner: LiveProcess,
+})
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

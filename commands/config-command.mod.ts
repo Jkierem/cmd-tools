@@ -81,11 +81,12 @@ const pickAction = (action: string) => action === "get" ? GetAction : SetAction
 const ConfigCommand = Command
     .ask<{ fileUrl: string }>()
     .openDependency("config")
-    .map(({ args, fileUrl }) => ({ 
+    .map(({ args, fileUrl, runner }) => ({ 
         action: args[0], 
         key:    args[1], 
         value:  args[2],
-        fileUrl
+        fileUrl,
+        runner
     }))
     .accessEffect("action", validateAction)
     .supplyChain("configData", getAllConfig)

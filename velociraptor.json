@@ -9,6 +9,7 @@
         "build": "vr runner build",
         "clean": "rm -rf ./bin",
         "prepare": "./scripts/prepare",
-        "install": "./scripts/install.sh"
+        "install": "./scripts/install.sh",
+        "test": "deno test --allow-env"
     }
 }

@@ -1,5 +1,6 @@
 type UnwrapPromise<A> = A extends Promise<infer B> ? B : A
 type Key = string | number | symbol
+// deno-lint-ignore ban-types
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
 
 type IOPromise<Env,A> = {
@@ -22,6 +23,7 @@ type IOPromise<Env,A> = {
     openDependency: <K extends keyof A>(key: K) => IOPromise<Env, Omit<A & A[K],K>>,
     accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
+    accessMap: <K extends keyof A,B>(key: K, fn: (a: A[K]) => B) => IOPromise<Env, Omit<A,K> & { [P in K]: B }>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
     // deno-lint-ignore no-explicit-any
     catchError: () => IOPromise<Env, any>,
@@ -73,6 +75,14 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         },
         accessChain<K extends keyof A, Env0, B>(key: K, io: (a: A[K]) => IOPromise<Env0, B>){
             return this.access(key).chain(io)
+        },
+        accessMap(key, fn){
+            return this.map(data => {
+                return {
+                    ...data,
+                    [key]: fn(data[key])
+                } 
+            })
         },
         provideTo<B>(io: IOPromise<A,B>){
             return this.chain(a => io.supply(a) as IOPromise<unknown,B>)

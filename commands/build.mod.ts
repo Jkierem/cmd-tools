@@ -19,8 +19,8 @@ const Build = Command
     .access("fileUrl")
     .map(resolveFolder)
     .map(folder => `${folder}/bin`)
-    .effect((f) => rmrf
-        .supply({ path: f })
+    .effect((path) => rmrf
+        .supply({ path })
         .mapTo("Deleted bin folder")
         .catchError()
         .map(x => x.trim())
