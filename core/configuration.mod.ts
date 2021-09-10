@@ -1,4 +1,4 @@
-import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/path/mod.ts";
+import { resolveFolder } from "./resolve.mod.ts"
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
 import { decode, encode } from "./codec.mod.ts"
@@ -37,7 +37,7 @@ const parseConfig = (str: string) => Either
     .toIOPromise()
 
 const relativeConfig = (x: string) => `${x}/config.json`
-const getConfigPath = (fileUrl: string) => fromFileUrl(normalize(relativeConfig(dirname(fileUrl))))
+const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
 const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
 
 export const getAllConfig = IOPromise

@@ -36,7 +36,7 @@ type IOPromise<Env,A> = {
 
 const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
     return {
-        run: (env: Env): Promise<A> => run(env),
+        run: (env: Env = {} as Env): Promise<A> => run(env),
         map: <B>(fn: (a: A) => B): IOPromise<Env, B> => succeed((env) => {
             return run(env).then(fn)
         }),

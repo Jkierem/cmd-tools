@@ -1,0 +1,15 @@
+Auto commands v2.0
+by Jkierem (Juan Miguel Gomez)
+
+Deno based command runner. Available commands are:
+
+  commit [message]         : do an auto commit prefixing the branch name if it matches the ticketToken in config
+  update                   : perform auto rebase against the baseBranch in config  
+  build                    : build the auto command artifact
+  config set [key] [value] : set a config key with the given value
+  config get [key]         : get the value of a config key 
+  debug                    : for dev purposes
+  help                     : show this message
+  init                     : initialize configuration using the wizard
+  branch [branchName]      : create a new branch prefixing the branchPrefix to the branchName
+  move [hint]              : move to a branch with hint as part of the name. Branch hint must match to only one branch

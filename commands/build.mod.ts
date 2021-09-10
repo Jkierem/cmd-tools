@@ -1,10 +1,9 @@
-import { normalize, dirname, fromFileUrl } from "https://deno.land/std@0.106.0/path/mod.ts";
+import { resolveFolder } from "../core/resolve.mod.ts";
 import IOPromise from "../core/io-promise.mod.ts"
 import IOProcess from "../core/io-process.mod.ts"
 import { Command } from "../core/command.mod.ts"
 import { doDefaultConfirm, printLn, writeFile } from "../core/io-helpers.mod.ts"
 
-const resolveFolder = (fileUrl: string) => normalize(dirname(fromFileUrl(fileUrl)));
 const rmrf = IOPromise.require<{ path: string }>().map(({ path }) => ["rm","-r",path]).chain(IOProcess.of)
 const mkDir = IOPromise.require<{ name: string }>().map(({ name }) => ["mkdir",name]).chain(IOProcess.of)
 const touch = IOPromise.require<{ file: string }>().map(({ file }) => ["touch",file]).chain(IOProcess.of)

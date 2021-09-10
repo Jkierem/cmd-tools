@@ -2,6 +2,7 @@ import AutoCommit from "./commands/auto-commit.mod.ts"
 import AutoUpdate from "./commands/auto-update.mod.ts"
 import Build from "./commands/build.mod.ts"
 import ConfigCommand from "./commands/config-command.mod.ts"
+import HelpCommand from "./commands/help.mod.ts"
 import InitConfig from "./commands/init-config.mod.ts"
 import NewBranch from "./commands/new-branch.mod.ts"
 import SmartMove from "./commands/smart-move.mod.ts"
@@ -18,17 +19,17 @@ const Debug = Command.ask().map(JSON.stringify)
 
 const pickCommand = IOPromise
     .require<{ command: string, args: string[], config: Config }>()
-    .supply({ command })
     .chain(({ command, config, args }) => {
         const cmd = {
-            commit: AutoCommit,
-            debug: Debug,
             branch: NewBranch,
+            build: Build,
+            commit: AutoCommit,
+            config: ConfigCommand,
+            debug: Debug,
+            help: HelpCommand,
+            init: InitConfig,
             move: SmartMove,
             update: AutoUpdate,
-            config: ConfigCommand,
-            build: Build,
-            init: InitConfig,
         }[command] ?? NoOp(command)
         return cmd.supply({ args, config })
     })
@@ -42,10 +43,10 @@ const logError = onConsole("error")
 
 getConfig
 .accessChain("config",(config) => pickCommand.supply({ config }))
-.run({ 
-    command, 
+.run({
+    command,
     fileUrl: import.meta.url, 
-    args: commandArgs ,
+    args: commandArgs,
     runner: LiveProcess,
     fileIO: LiveFileIO,
     console: LiveConsole,
