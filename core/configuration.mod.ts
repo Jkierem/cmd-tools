@@ -54,7 +54,7 @@ export const getConfig = IOPromise
     .require<{ command: string, fileUrl: string, fileIO: FileIO }>()
     .effect(({ fileUrl, command }) => {
         return Either
-        .of(command === "init")
+        .of(command === "init" || command === "help")
         .fold(
             () => exists(getConfigPath(fileUrl)).chain(
                 available => available 
