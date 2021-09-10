@@ -31,7 +31,7 @@ const pickCommand = IOPromise
             move: SmartMove,
             update: AutoUpdate,
         }[command] ?? NoOp(command)
-        return cmd.supply({ args, config })
+        return cmd.supply({ args, config, command })
     })
 
 const onConsole = (method: "log" | "error") => (pre: string) => (x: string) => {

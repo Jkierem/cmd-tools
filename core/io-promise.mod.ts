@@ -23,6 +23,7 @@ type IOPromise<Env,A> = {
     accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     accessMap: <K extends keyof A,B>(key: K, fn: (a: A[K]) => B) => IOPromise<Env, Omit<A,K> & { [P in K]: B }>,
+    alias: <K extends keyof A, K0 extends string>(original: K, alias: K0) => IOPromise<Env, Omit<A,K> & { [P in K0]: A[K] }>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
     // deno-lint-ignore no-explicit-any
     catchError: () => IOPromise<Env, any>,
@@ -81,6 +82,11 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
                     ...data,
                     [key]: fn(data[key])
                 } 
+            })
+        },
+        alias<K extends keyof A, K0 extends string>(original: K, alias: K0){
+            return this.map(({ [original]: og, ...rest}) => {
+                return { ...rest, [alias]: og } as Omit<A,K> & { [P in K0]: A[K] }
             })
         },
         provideTo<B>(io: IOPromise<A,B>){

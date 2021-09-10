@@ -89,7 +89,7 @@ const ConfigCommand = Command
         value:  args[2],
         fileUrl,
         runner,
-        fileIO
+        fileIO,
     }))
     .accessEffect("action", validateAction)
     .supplyChain("configData", getAllConfig)

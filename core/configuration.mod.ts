@@ -33,18 +33,19 @@ export type EmptyConfig = Record<string,never>
 
 const parseConfig = (str: string) => Either
     .attempt(() => JSON.parse(str) as ConfigFile)
-    .mapLeftTo("Error parsing config")
+    .mapLeftTo("Error parsing config. Try running 'auto init' to create a new config file")
     .toIOPromise()
 
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
 const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
+const shouldSkipConfig = (str: string) => str === "init" || str === "help"
 
 export const getAllConfig = IOPromise
-    .require<{ fileUrl: string }>()
-    .access("fileUrl")
-    .map(getConfigPath)
-    .chain(path => readFile(path).mapErrorTo(encode("{}")))
+    .require<{ fileUrl: string, skip?: boolean }>()
+    .accessMap("fileUrl", getConfigPath)
+    .alias("fileUrl","path")
+    .chain(({ path, skip }) => skip ? IOPromise.succeed(encode("{}")) : readFile(path))
     .map(decode)
     .chain(parseConfig)
 
@@ -52,9 +53,10 @@ const getOr = <T,F>(key: string, fallback: F, obj: T) => obj?.[key as keyof T] ?
 
 export const getConfig = IOPromise
     .require<{ command: string, fileUrl: string, fileIO: FileIO }>()
-    .effect(({ fileUrl, command }) => {
+    .map((data) => ({ ...data, skip: shouldSkipConfig(data.command)}))
+    .effect(({ fileUrl, skip }) => {
         return Either
-        .of(command === "init" || command === "help")
+        .of(skip)
         .fold(
             () => exists(getConfigPath(fileUrl)).chain(
                 available => available 
