@@ -25,13 +25,11 @@ type IOPromise<Env,A> = {
     accessMap: <K extends keyof A,B>(key: K, fn: (a: A[K]) => B) => IOPromise<Env, Omit<A,K> & { [P in K]: B }>,
     alias: <K extends keyof A, K0 extends string>(original: K, alias: K0) => IOPromise<Env, Omit<A,K> & { [P in K0]: A[K] }>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
-    // deno-lint-ignore no-explicit-any
-    catchError: () => IOPromise<Env, any>,
-    onError: <B>(fn: () => B) => IOPromise<Env, A|B>,
+    catchError: <Err>() => IOPromise<Env, Err>,
+    onError: <B>(fn: () => B) => IOPromise<Env, A | B>,
     mapErrorTo: <B>(a: B) => IOPromise<Env, A | B>,
     ignore: () => IOPromise<Env,undefined>,
-    // deno-lint-ignore no-explicit-any
-    recover: <B>(onErr: (err: any) => IOPromise<unknown, B>) => IOPromise<Env,A | B>,
+    recover: <B, Err>(onErr: (err: Err) => IOPromise<unknown, B>) => IOPromise<Env, A | B>,
     run: (env: Env) => Promise<A>
 }
 
@@ -44,7 +42,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         mapTo<B>(b: B){ return this.map(() => b) as IOPromise<Env,B> },
         chain: (fn) => succeed((env) => run(env).then(x => fn(x).run(env))),
         sequence(io){ return this.chain(() => io)},
-        zipWith<Env0,B,C>(io: IOPromise<Env0,B>, fn: (a: A, b: B) => C){ 
+        zipWith<Env0,B,C>(io: IOPromise<Env0,B>, fn: (a: A, b: B) => C ) { 
             return this.chain(a => io.map(b => fn(a,b)))
         },
         zip(io){ return this.zipWith(io, (a,b) => ([a,b] as const)) },
