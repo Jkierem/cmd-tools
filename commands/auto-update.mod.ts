@@ -14,17 +14,17 @@ const AutoUpdate: Command<UpdateConfig,string> = Command
     .ask<UpdateConfig>()
     .openDependency("config")
     .supplyChain("hasChanges", hasChanges)
-    .effect(({ autoStashEnabled, hasChanges, runner }) => {
+    .effect(({ autoStashEnabled, hasChanges }) => {
         return autoStashEnabled === "true" 
             ? hasChanges 
-                ? stashBranch.supply({ runner }).chain(printLn)
+                ? stashBranch.chain(printLn)
                 : printLn("Branch has no changes")
             : printLn("Autostash is disabled")
     })
     .supplyChain("currentBranch", getCurrentBranch)
-    .effect(({ runner, baseBranch }) => switchBranch(baseBranch).supply({ runner }))
-    .effect(({ runner, pullOptions }) => pullBranch(...(pullOptions === "default" ? [] : ["--rebase"])).supply({ runner }))
-    .effect(({ runner, currentBranch }) => switchBranch(currentBranch).supply({ runner }))
+    .effect(({ baseBranch }) => switchBranch(baseBranch))
+    .effect(({ pullOptions }) => pullBranch(...(pullOptions === "default" ? [] : ["--rebase"])))
+    .effect(({ currentBranch }) => switchBranch(currentBranch))
     .accessChain("baseBranch", rebaseBranch)
 
 export default AutoUpdate

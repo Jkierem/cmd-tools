@@ -8,6 +8,11 @@ const IOProcess = {
             .access("runner")
             .chain(runner => IOPromise.of(() => runner.run(cmd)))
     },
+    ask: <Reqs>() => IOPromise.require<Reqs>(),
+    build: <T>(buildFn: (a: T) => string[]) => IOPromise
+        .require<T>()
+        .map(buildFn)
+        .chain(IOProcess.of)
 }
 
 export default IOProcess

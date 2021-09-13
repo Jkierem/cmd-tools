@@ -1,4 +1,3 @@
-type UnwrapPromise<A> = A extends Promise<infer B> ? B : A
 type Key = string | number | symbol
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
 
@@ -25,7 +24,7 @@ type IOPromise<Env,A> = {
     accessMap: <K extends keyof A,B>(key: K, fn: (a: A[K]) => B) => IOPromise<Env, Omit<A,K> & { [P in K]: B }>,
     alias: <K extends keyof A, K0 extends string>(original: K, alias: K0) => IOPromise<Env, Omit<A,K> & { [P in K0]: A[K] }>,
     provideTo: <B>(io: IOPromise<A,B>) => IOPromise<Env,B>,
-    catchError: <Err>() => IOPromise<Env, Err>,
+    catchError: <Err>() => IOPromise<Env, Err | A>,
     onError: <B>(fn: () => B) => IOPromise<Env, A | B>,
     mapErrorTo: <B>(a: B) => IOPromise<Env, A | B>,
     ignore: () => IOPromise<Env,undefined>,
@@ -122,7 +121,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
 
 const IOPromise = {
     of: <Env,A>(fn: (env: Env) => Promise<A>): IOPromise<Env,A> => succeed(fn),
-    from: <Env,A>(fn: (env: Env) => A) => succeed((env) => Promise.resolve().then(() => fn(env))) as IOPromise<Env,UnwrapPromise<A>>,
+    from: <Env,A>(fn: (env: Env) => A) => succeed((env) => Promise.resolve().then(() => fn(env))) as IOPromise<Env,A>,
     unary: <A,B>(fn: (a: A) => B) => (arg: A) => IOPromise.from(() => fn(arg)),
     through: <A,B>(fn: (...a: A[]) => B) => (...arg: A[]) => IOPromise.from(() => fn(...arg)),
     succeed: <A>(a: A) => IOPromise.from(() => a),
