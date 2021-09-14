@@ -7,7 +7,7 @@ import InitConfig from "./commands/init-config.mod.ts"
 import NewBranch from "./commands/new-branch.mod.ts"
 import SmartMove from "./commands/smart-move.mod.ts"
 import IOPromise  from "./core/io-promise.mod.ts"
-import { Command } from "./core/command.mod.ts"
+import { Command, CommandEnv } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
 import { LiveProcess, LiveFileIO, LiveConsole } from "./core/services.live.mod.ts"
 
@@ -15,7 +15,13 @@ const [command, ...commandArgs] = Deno.args
 
 const NoOp = (cmdName: string) => Command.fail(`No "${cmdName}" command found`)
 
-const Debug = Command.ask().map(JSON.stringify)
+function specialStringify(key: string, value: any){
+    if( typeof value === "function" ){
+        return `[Function ${key}]`
+    }
+    return value
+}
+const Debug = Command.ask().map((x: CommandEnv) => JSON.stringify(x,specialStringify,3))
 
 const pickCommand = IOPromise
     .require<{ command: string, args: string[], config: Config }>()
