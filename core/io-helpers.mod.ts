@@ -23,6 +23,8 @@ export const Bias: Record<"Yes"|"No",Bias> = {
     Yes: { answers: ["n", "no"] as const, suffix: "[Y|n]", default: "yes", normalize: "no" }
 }
 
+const toLowerCase = <T extends string>(str: T): Lowercase<T> => str.toLowerCase() as Lowercase<T>
+
 export const doBiasConfirm = (msg: string, bias=Bias.Yes) =>
     doPrompt(`${msg} ${bias.suffix}`)
         .map(str => str?.trim() ?? "")
@@ -32,7 +34,6 @@ export const doBiasConfirm = (msg: string, bias=Bias.Yes) =>
 
 export const doBooleanConfirm = (msg: string, bias=Bias.Yes) => doBiasConfirm(msg, bias).map(x => x === "yes")
 
-const toLowerCase = <T extends string>(str: T): Lowercase<T> => str.toLowerCase() as Lowercase<T>
 export const doConfirm = (msg: string) => 
     doBiasConfirm(msg, Bias.No).chain((str) => {
         return Either.of(str)
@@ -45,14 +46,20 @@ export const doDefaultConfirm = doConfirm("Are you sure?")
 
 export const printLn = <T>(...args: T[]) => IOPromise
     .require<{ console: ConsoleService }>()
-    .chain(({ console }) => IOPromise.through(console.log)(...args))
+    .openDependency("console")
+    .access("log")
+    .chain((log) => IOPromise.through(log)(...args))
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
 
 export const readFile = (path: string) => IOPromise
     .require<{ fileIO: FileIO }>()
-    .chain(({ fileIO }) => IOPromise.of(() => fileIO.read(path)))
+    .openDependency("fileIO")
+    .access("read")
+    .chain((read) => IOPromise.of(() => read(path)))
 
 export const writeFile = (path: string, data: string) => IOPromise
     .require<{ fileIO: FileIO }>()
-    .chain(({ fileIO }) => IOPromise.of(() => fileIO.write(path,data)))
+    .openDependency("fileIO")
+    .access("write")
+    .chain((write) => IOPromise.of(() => write(path,data)))

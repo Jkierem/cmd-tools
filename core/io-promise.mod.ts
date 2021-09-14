@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 type Key = string | number | symbol
 const prop = <T,K extends keyof T>(key: K) => (obj: T): T[K] => obj[key]
 
@@ -122,6 +123,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
 const IOPromise = {
     of: <Env,A>(fn: (env: Env) => Promise<A>): IOPromise<Env,A> => succeed(fn),
     from: <Env,A>(fn: (env: Env) => A) => succeed((env) => Promise.resolve().then(() => fn(env))) as IOPromise<Env,A>,
+    fromPromise: <A>(p: Promise<A>) => IOPromise.of(() => p),
     unary: <A,B>(fn: (a: A) => B) => (arg: A) => IOPromise.from(() => fn(arg)),
     through: <A,B>(fn: (...a: A[]) => B) => (...arg: A[]) => IOPromise.from(() => fn(...arg)),
     succeed: <A>(a: A) => IOPromise.from(() => a),
