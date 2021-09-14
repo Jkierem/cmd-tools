@@ -73,6 +73,6 @@ export const setConfig = IOPromise
     .require<{ fileUrl: string, data: ConfigFile }>()
     .map(({ fileUrl, data }) => ({ 
         path: getConfigPath(fileUrl),
-        data: JSON.stringify(data)
+        data: JSON.stringify(data, null, "\t")
     }))
     .chain(({ path, data }) => writeFile(path, data))
