@@ -39,7 +39,7 @@ const parseConfig = (str: string) => Either
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
 const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
-const shouldSkipConfig = (str: string) => str === "init" || str === "help"
+const shouldSkipConfig = (str: string) => str === "init" || str === "help" || str === "build"
 
 export const getAllConfig = IOPromise
     .require<{ fileUrl: string, skip?: boolean }>()
