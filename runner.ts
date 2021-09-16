@@ -15,7 +15,7 @@ const [command, ...commandArgs] = Deno.args
 
 const NoOp = (cmdName: string) => Command.fail(`No "${cmdName}" command found`)
 
-function specialStringify(key: string, value: any){
+function specialStringify<T>(key: string, value: T){
     if( typeof value === "function" ){
         return `[Function ${key}]`
     }
@@ -40,9 +40,9 @@ const pickCommand = IOPromise
         return cmd.supply({ args, config, command })
     })
 
-const onConsole = (method: "log" | "error") => (pre: string) => (x: string) => {
+const onConsole = (method: "log" | "error") => (msg: string) => (x: string) => {
     console[method](x)
-    console[method](pre)
+    console[method](msg)
 }
 const logSuccess = onConsole("log")
 const logError = onConsole("error")
