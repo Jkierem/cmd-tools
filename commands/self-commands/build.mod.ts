@@ -1,7 +1,7 @@
-import IOProcess from "../core/io-process.mod.ts"
-import { Command } from "../core/command.mod.ts"
-import { resolveFolder, relativePathTo } from "../core/resolve.mod.ts";
-import { doDefaultConfirm, printLn, writeFile } from "../core/io-helpers.mod.ts"
+import IOProcess from "../../core/io-process.mod.ts"
+import { Command } from "../../core/command.mod.ts"
+import { resolveFolder, relativePathTo } from "../../core/resolve.mod.ts";
+import { doDefaultConfirm, printLn, writeFile } from "../../core/io-helpers.mod.ts"
 
 const rmrec = IOProcess.build<{ path: string }>(({ path }) => ["rm","-r",path])
 const mkDir = IOProcess.build<{ name: string }>(({ name }) => ["mkdir",name])

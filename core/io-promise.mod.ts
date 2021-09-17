@@ -20,7 +20,7 @@ type IOPromise<Env,A> = {
     expandDependency: <K extends keyof A>(key: K) => IOPromise<Env, A & A[K]>,
     dropDependency: <K extends keyof A>(key: K) => IOPromise<Env, Omit<A,K>>,
     openDependency: <K extends keyof A>(key: K) => IOPromise<Env, Omit<A & A[K],K>>,
-    accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<unknown,B>) => IOPromise<Env,A>,
+    accessEffect: <K extends keyof A,B>(key: K, io: (a: A[K]) => IOPromise<Env,B>) => IOPromise<Env,A>,
     accessChain: <K extends keyof A,Env0,B>(key: K, io: (a: A[K]) => IOPromise<Env0,B>) => IOPromise<Env & Env0,B>,
     accessMap: <K extends keyof A,B>(key: K, fn: (a: A[K]) => B) => IOPromise<Env, Omit<A,K> & { [P in K]: B }>,
     alias: <K extends keyof A, K0 extends string>(original: K, alias: K0) => IOPromise<Env, Omit<A,K> & { [P in K0]: A[K] }>,

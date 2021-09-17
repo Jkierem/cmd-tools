@@ -1,6 +1,6 @@
-import { Command } from "../core/command.mod.ts"
-import { doPrompt, doPromptOr, doBooleanConfirm } from "../core/io-helpers.mod.ts"
-import { setConfig, ConfigFile } from "../core/configuration.mod.ts"
+import { Command } from "../../core/command.mod.ts"
+import { doPrompt, doPromptOr, doBooleanConfirm } from "../../core/io-helpers.mod.ts"
+import { setConfig, ConfigFile } from "../../core/configuration.mod.ts"
 
 const InitConfig = Command
     .ask<{ fileUrl: string }>()

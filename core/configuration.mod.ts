@@ -33,13 +33,13 @@ export type EmptyConfig = Record<string,never>
 
 const parseConfig = (str: string) => Either
     .attempt(() => JSON.parse(str) as ConfigFile)
-    .mapLeftTo("Error parsing config. Try running 'auto init' to create a new config file")
+    .mapLeftTo("Error parsing config. Try running 'auto self init' to create a new config file")
     .toIOPromise()
 
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
 const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
-const shouldSkipConfig = (str: string) => str === "init" || str === "help" || str === "build"
+const shouldSkipConfig = (str: string) => str === "self" || str === "help"
 
 export const getAllConfig = IOPromise
     .require<{ fileUrl: string, skip?: boolean }>()
