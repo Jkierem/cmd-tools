@@ -1,6 +1,6 @@
 import Maybe from "./maybe.mod.ts"
 import { decode } from "./codec.mod.ts"
-import type { ConsoleService, FileIO, ProcessRunner } from "./services.mod.ts"
+import type { ConsoleService, FileIO, ProcessRunner, OSService } from "./services.mod.ts"
 
 export const LiveConsole: ConsoleService = {
     log: console.log,
@@ -27,4 +27,22 @@ export const LiveProcess: ProcessRunner = {
             return Promise.reject(message+`Process exited with non-zero code ${status.code}`)
         }
     },
+}
+
+export const LiveOS: OSService = {
+    chmod: Deno.chmod,
+    create: (path: string) => Deno.create(path).then(() => {}),
+    mkdir: (path: string) => Deno.mkdir(path),
+    rmDir: (path: string) => Deno.remove(path, { recursive: true }),
+    exists: async (path: string) => {
+        try {
+            await Deno.lstat(path)
+            return true
+        } catch(e) {
+            if(e instanceof Deno.errors.NotFound){
+                return false
+            }
+            throw e
+        }
+    }
 }
