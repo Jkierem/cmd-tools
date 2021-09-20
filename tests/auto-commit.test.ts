@@ -1,18 +1,26 @@
 import { assert, assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import AutoCommit from "../commands/auto-commit.mod.ts"
-import { createMockEnv, resetMockContainer } from "./utils/mocks.ts"
+import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "./utils/mocks.ts"
 import { fromArray } from "./utils/script.ts"
 
-const MockedEnv = createMockEnv()
+const MockedEnv = createMockedEnv()
 const {
     runner: MockRunner,
     fileIO: MockFileIO,
-    console: MockConsole
+    console: MockConsole,
+    os: MockOS,
 } = MockedEnv
 
 const cleanup = () => resetMockContainer(MockedEnv)
+const sandbox = (fn: () => Promise<void>) => async () => {
+    try {
+        await fn()
+    } finally {
+        cleanup()
+    }
+}
 
-Deno.test("AutoCommit -> Happy path", async () => {
+Deno.test("AutoCommit -> Happy Path -> With feature branch detection", sandbox(async () => {
     MockRunner.run.setImplementation(fromArray([
         Promise.resolve("On branch J-42"),
         Promise.resolve("Test complete"),
@@ -25,18 +33,57 @@ Deno.test("AutoCommit -> Happy path", async () => {
     })
 
     assertEquals(res, "Test complete")
-    MockFileIO.read.assert.wasNotCalled()
-    MockFileIO.write.assert.wasNotCalled()
+    assertNoneWasCalled(MockOS)
+    assertNoneWasCalled(MockFileIO)
     MockConsole.prompt.assert.wasNotCalled()
     MockConsole.log.assert.wasCalledOnce()
     MockConsole.log.assert.wasCalledWith('About to run "git commit -m J-42: commit message"')
     MockRunner.run.assert.wasCalledTwice()
     MockRunner.run.assert.wasCalledWith(["git","status"])
     MockRunner.run.assert.wasCalledWith(["git","commit","-m","J-42: commit message"])
-    cleanup()
-})
+}))
 
-Deno.test("AutoCommit -> Branch is not feature branch", async () => {
+Deno.test("AutoCommit -> Happy Path -> Without feature branch detection", sandbox(async () => {
+    MockRunner.run.setImplementation(fromArray([
+        Promise.resolve("On branch main"),
+        Promise.resolve("Test complete"),
+    ]))
+
+    const res = await AutoCommit.run({
+        args: ["commit message"],
+        config: { ticketToken: null as unknown as string },
+        ...MockedEnv
+    })
+
+    assertEquals(res, "Test complete")
+    assertNoneWasCalled(MockOS)
+    assertNoneWasCalled(MockFileIO)
+    MockConsole.prompt.assert.wasNotCalled()
+    MockConsole.log.assert.wasCalledTwice()
+    MockConsole.log.assert.wasCalledWith('Feature branch detection is off. Proceeding...')
+    MockConsole.log.assert.wasCalledWith('About to run "git commit -m main: commit message"')
+    MockRunner.run.assert.wasCalledTwice()
+    MockRunner.run.assert.wasCalledWith(["git","status"])
+    MockRunner.run.assert.wasCalledWith(["git","commit","-m","main: commit message"])
+}))
+
+Deno.test("AutoCommit -> Failure Path -> Branch must have numbers", sandbox(async () => {
+    MockRunner.run.setImplementation(fromArray([
+        Promise.resolve("On branch J-")
+    ]))
+    try {
+        await AutoCommit.run({
+            args: ["commit message"],
+            config: { ticketToken: "J" },
+            ...MockedEnv
+        })
+        assert(false, "Should have thrown")
+    } catch(e: unknown) {
+        assertEquals(e, "Branch is not a feature branch")
+    }
+}))
+
+Deno.test("AutoCommit -> Failure Path -> Branch is not feature branch", sandbox(async () => {
     MockRunner.run.setImplementation(fromArray([
         Promise.resolve("On branch Not-feature-branch")
     ]))
@@ -50,30 +97,30 @@ Deno.test("AutoCommit -> Branch is not feature branch", async () => {
     } catch(e: unknown) {
         assertEquals(e, "Branch is not a feature branch")
     }
-    cleanup()
-})
+}))
 
-Deno.test("AutoCommit -> Without feature branch detection", async () => {
-    MockRunner.run.setImplementation(fromArray([
-        Promise.resolve("On branch main"),
-        Promise.resolve("Test complete"),
-    ]))
+Deno.test("AutoCommit -> Failure Path -> No message provided", sandbox(async () => {
+    try {
+        await AutoCommit.run({
+            args: [],
+            config: { ticketToken: "J" },
+            ...MockedEnv
+        })
+        assert(false, "Should have thrown")
+    } catch(e: unknown) {
+        assertEquals(e, "No message provided")
+    }
+}))
 
-    const res = await AutoCommit.run({
-        args: ["commit message"],
-        config: { ticketToken: null as unknown as string },
-        ...MockedEnv
-    })
-
-    assertEquals(res, "Test complete")
-    MockFileIO.read.assert.wasNotCalled()
-    MockFileIO.write.assert.wasNotCalled()
-    MockConsole.prompt.assert.wasNotCalled()
-    MockConsole.log.assert.wasCalledTwice()
-    MockConsole.log.assert.wasCalledWith('Feature branch detection is off. Proceeding...')
-    MockConsole.log.assert.wasCalledWith('About to run "git commit -m main: commit message"')
-    MockRunner.run.assert.wasCalledTwice()
-    MockRunner.run.assert.wasCalledWith(["git","status"])
-    MockRunner.run.assert.wasCalledWith(["git","commit","-m","main: commit message"])
-    cleanup()
-})
+Deno.test("AutoCommit -> Failure Path -> Empty message", sandbox(async () => {
+    try {
+        await AutoCommit.run({
+            args: ["     "],
+            config: { ticketToken: "J" },
+            ...MockedEnv
+        })
+        assert(false, "Should have thrown")
+    } catch(e: unknown) {
+        assertEquals(e, "Message is empty")
+    }
+}))

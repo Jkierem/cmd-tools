@@ -133,3 +133,5 @@ const IOPromise = {
 }
 
 export default IOPromise
+
+export const ifDo = <Env, A>(condition: boolean, task: IOPromise<Env,A>) => condition ? task : IOPromise.unit as unknown as IOPromise<Env,A>

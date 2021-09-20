@@ -6,7 +6,7 @@ Deno based command runner. Available commands are:
   commit [message]         : do an auto commit prefixing the branch name if it matches the ticketToken in config
   update                   : perform auto rebase against the baseBranch in config  
   config set [key] [value] : set a config key with the given value
-  config get [key]         : get the value of a config key 
+  config get [key]         : get the value of a config key. To get all options use "." as key
   debug                    : for dev purposes
   help                     : show this message
   branch [branchName]      : create a new branch prefixing the branchPrefix to the branchName

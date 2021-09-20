@@ -8,7 +8,7 @@ import { Command } from '../core/command.mod.ts'
 import { CommitConfig } from "../core/configuration.mod.ts"
 import type { ConsoleService } from "../core/services.mod.ts"
 
-const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]*`)
+const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]+`)
 
 const commitCmd = (msg: string) => gitCmd("commit", "-m", msg)
 
@@ -38,10 +38,7 @@ const findTicketName = (ticketToken: string | null) => (branch: string) => {
         .fromNullish(ticketToken)
         .map(tt => branch.match(TicketRegExp(tt)))
         .map(matches => matches?.[0])
-        .map(match => Either.of(match)
-            .mapLeftTo("Couldn't get ticket name")
-            .toIOPromise()
-        )
+        .map(match => IOPromise.succeed(match!))
         .onNone(() => IOPromise.succeed(branch))
 }
 

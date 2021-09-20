@@ -14,7 +14,7 @@ export type ProcessRunner = {
 
 export type OSService = {
     create: (path: string) => Promise<void>,
-    mkdir: (path: string) => Promise<void>,
+    mkDir: (path: string) => Promise<void>,
     chmod: (path: string, mode: number) => Promise<void>,
     rmDir: (path: string) => Promise<void>,
     exists: (path: string) => Promise<boolean>,

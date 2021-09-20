@@ -1,6 +1,6 @@
 import IOPromise from './io-promise.mod.ts'
 import Either from './either.mod.ts'
-import type { ConsoleService, FileIO } from "./services.mod.ts"
+import type { ConsoleService, FileIO, OSService } from "./services.mod.ts"
 
 export const doPrompt = (message: string) => IOPromise
     .require<{ console: ConsoleService }>()
@@ -63,3 +63,9 @@ export const writeFile = (path: string, data: string) => IOPromise
     .openDependency("fileIO")
     .access("write")
     .chain((write) => IOPromise.of(() => write(path,data)))
+
+export const exists = (path: string) => IOPromise
+    .require<{ os: OSService }>()
+    .openDependency("os")
+    .access("exists")
+    .chain((exists) => IOPromise.of(() => exists(path)))

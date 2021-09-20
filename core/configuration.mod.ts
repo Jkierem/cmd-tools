@@ -2,8 +2,8 @@ import { resolveFolder } from "./resolve.mod.ts"
 import IOPromise from "./io-promise.mod.ts"
 import Either from "./either.mod.ts"
 import { decode, encode } from "./codec.mod.ts"
-import { readFile, writeFile } from "./io-helpers.mod.ts"
-import type { FileIO } from "./services.mod.ts"
+import { readFile, writeFile, exists } from "./io-helpers.mod.ts"
+import type { FileIO, OSService } from "./services.mod.ts"
 
 export type UpdateConfig = {
     baseBranch: string,
@@ -38,7 +38,6 @@ const parseConfig = (str: string) => Either
 
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
-const exists = (path: string) => IOPromise.of(() => Deno.lstat(path)).mapTo(true).mapErrorTo(false)
 const shouldSkipConfig = (str: string) => str === "self" || str === "help"
 
 export const getAllConfig = IOPromise
@@ -52,7 +51,7 @@ export const getAllConfig = IOPromise
 const getOr = <T,F>(key: string, fallback: F, obj: T) => obj?.[key as keyof T] ?? fallback
 
 export const getConfig = IOPromise
-    .require<{ command: string, fileUrl: string, fileIO: FileIO }>()
+    .require<{ command: string, fileUrl: string, fileIO: FileIO, os: OSService }>()
     .map((data) => ({ ...data, skip: shouldSkipConfig(data.command)}))
     .effect(({ fileUrl, skip }) => {
         return Either
@@ -61,7 +60,7 @@ export const getConfig = IOPromise
             () => exists(getConfigPath(fileUrl)).chain(
                 available => available 
                     ? IOPromise.unit
-                    : IOPromise.fail("Config file is not available. Try running 'auto init'")
+                    : IOPromise.fail("Config file is not available. Try running 'auto self init'")
             ),
             () => IOPromise.unit
         )

@@ -32,7 +32,7 @@ export const LiveProcess: ProcessRunner = {
 export const LiveOS: OSService = {
     chmod: Deno.chmod,
     create: (path: string) => Deno.create(path).then(() => {}),
-    mkdir: (path: string) => Deno.mkdir(path),
+    mkDir: (path: string) => Deno.mkdir(path),
     rmDir: (path: string) => Deno.remove(path, { recursive: true }),
     exists: async (path: string) => {
         try {

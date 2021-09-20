@@ -1,8 +1,9 @@
-import IOPromise from "../core/io-promise.mod.ts"
+import IOPromise, { ifDo } from "../core/io-promise.mod.ts"
 import Either from "../core/either.mod.ts"
 import { Command } from "../core/command.mod.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.mod.ts"
-import type { FileIO } from "../core/services.mod.ts"
+import { printLn } from "../core/io-helpers.mod.ts"
+import type { FileIO, ConsoleService } from "../core/services.mod.ts"
 
 const actions = ["get", "set"]
 const validateAction = (action: string) => {
@@ -12,8 +13,10 @@ const validateAction = (action: string) => {
         .toIOPromise()
 }
 
+const specialStringify = <T>(data: T) => JSON.stringify(data, null, 3)
+
 const validateDefined = <T>(x: T) => Either.of(x)
-    .map(JSON.stringify)
+    .map(specialStringify)
     .mapLeftTo(`Key does not exist in config`)
     .toIOPromise()
 
@@ -34,7 +37,13 @@ const getPath = <T,K extends string>(path: K, obj: T): PathType<T,K> => {
 
 const GetAction = IOPromise
     .require<{ key: string, configData: ConfigFile }>()
-    .map(({ key, configData }) => getPath(key, configData))
+    .map(({ key, configData }) => {
+        return Either.fromPredicate(() => key === ".", key)
+            .fold(
+                () => getPath(key, configData),
+                () => configData
+            )
+    })
     .chain(validateDefined)
 
 const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): void => {
@@ -51,24 +60,32 @@ const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): voi
     }
 }
 
-type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string, fileIO: FileIO }
+type LeafValue = string | null
+type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string, fileIO: FileIO, console: ConsoleService }
 const validateSet = ({ key, value, configData }: SetEnv) => {
+    const fromUndefined = Either.ofPredicate(<T>(x: T): x is T  => x !== undefined)
     const fromNullish = Either.ofPredicate(<T>(x: T): x is T  => x !== null && x !== undefined)
     const fromEmpty = Either.ofPredicate((x: string): x is string => x.length !== 0)
-    const fromString = Either.ofPredicate((x: string | undefined): x is string => typeof x === "string")
-    return fromNullish(getPath(key,configData))
+    const fromLeafValue = Either.ofPredicate((x: string | null | undefined): x is LeafValue => x === null || typeof x === "string" )
+    return fromUndefined(getPath(key,configData))
         .mapLeftTo(`"${key}" is not a config option`)
-        .chain((p) => fromString(p).mapLeftTo("Value being set must be a leaf value"))
+        .chain((p) => fromLeafValue(p).mapLeftTo("Value being set must be a leaf value"))
         .chain(() => fromNullish(value).mapLeftTo("Value being set cannot be empty"))
         .chain(() => fromEmpty(value.trim()).mapLeftTo("Value being set cannot be empty"))
         .toIOPromise()
 }
 
+const nullify = (val: string): string | null => val === "null" ? null : val 
+
 const SetAction = IOPromise
     .require<SetEnv>()
     .effect(validateSet)
+    .effect(({ key, value }) => ifDo(
+        value === "null",
+        printLn(`Turning "${key}" config off. Some commands may fail.`) 
+    ))
     .map(({ key, value, configData, fileUrl, fileIO }) => {
-        setPath(key, (value as unknown) as undefined, configData)
+        setPath(key, (nullify(value) as unknown) as undefined, configData)
         return {
             fileUrl,
             data: configData,
@@ -83,13 +100,14 @@ const pickAction = (action: string) => action === "get" ? GetAction : SetAction
 const ConfigCommand = Command
     .ask<{ fileUrl: string }>()
     .openDependency("config")
-    .map(({ args, fileUrl, runner, fileIO }) => ({ 
+    .map(({ args, fileUrl, runner, fileIO, console }) => ({ 
         action: args[0], 
         key:    args[1], 
         value:  args[2],
         fileUrl,
         runner,
         fileIO,
+        console,
     }))
     .accessEffect("action", validateAction)
     .supplyChain("configData", getAllConfig)
