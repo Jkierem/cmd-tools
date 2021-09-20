@@ -8,7 +8,7 @@ import SelfCommands from "./commands/self-commands.mod.ts"
 import IOPromise  from "./core/io-promise.mod.ts"
 import { Command, CommandEnv } from "./core/command.mod.ts"
 import { getConfig, Config } from "./core/configuration.mod.ts"
-import { LiveProcess, LiveFileIO, LiveConsole } from "./core/services.live.mod.ts"
+import { LiveProcess, LiveFileIO, LiveConsole, LiveOS } from "./core/services.live.mod.ts"
 
 const [command, ...commandArgs] = Deno.args
 
@@ -54,6 +54,7 @@ getConfig
     runner: LiveProcess,
     fileIO: LiveFileIO,
     console: LiveConsole,
+    os: LiveOS
 })
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

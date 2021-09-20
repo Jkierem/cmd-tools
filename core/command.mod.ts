@@ -1,6 +1,6 @@
 import IOPromise from './io-promise.mod.ts'
 import { EmptyConfig } from "./configuration.mod.ts"
-import type { FileIO, ConsoleService, ProcessRunner } from "./services.mod.ts"
+import type { FileIO, ConsoleService, ProcessRunner, OSService } from "./services.mod.ts"
 
 export type CommandEmptyConfig = EmptyConfig
 
@@ -12,6 +12,7 @@ export type CommandEnv<T = EmptyConfig> = {
     runner: ProcessRunner,
     fileIO: FileIO,
     console: ConsoleService
+    os: OSService
 }
 
 export type Command<Env,A> = IOPromise<CommandEnv<Env>,CommandResult<A>>
