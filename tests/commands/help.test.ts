@@ -3,9 +3,8 @@ import { attempt } from "../utils/try.ts"
 import { createSandboxedEnv, assertServiceWasNotUsed } from "../utils/mocks.ts"
 import { fromArray } from "../utils/script.ts"
 
-const encoder = new TextEncoder()
 const fileText = "Hey there"
-const fileUint = encoder.encode(fileText)
+const fileUint = new TextEncoder().encode(fileText)
 const sandboxed = createSandboxedEnv()
 
 Deno.test("HelpCommand -> Happy Path", sandboxed(async (MockedEnv) => {
@@ -18,9 +17,7 @@ Deno.test("HelpCommand -> Happy Path", sandboxed(async (MockedEnv) => {
 
     const result = await attempt(() => HelpCommand.run({
         args: [],
-        config: {
-            fileUrl,
-        },
+        config: { fileUrl },
         ...MockedEnv
     }))
 

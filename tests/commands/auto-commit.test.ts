@@ -1,4 +1,3 @@
-import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import AutoCommit from "../../commands/auto-commit.ts"
 import { fromArray } from "../utils/script.ts"
 import { attempt } from "../utils/try.ts"
@@ -27,13 +26,13 @@ Deno.test("AutoCommit -> Happy Path -> With feature branch detection", sandbox(a
         Promise.resolve("Test complete"),
     ]))
 
-    const res = await AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: ["commit message"],
         config: { ticketToken: "J" },
         ...MockedEnv
-    })
+    }))
 
-    assertEquals(res, "Test complete")
+    result.expect.toReturn("Test complete")
     assertServiceWasNotUsed(MockOS)
     assertServiceWasNotUsed(MockFileIO)
     MockConsole.prompt.assert.wasNotCalled()
@@ -50,13 +49,13 @@ Deno.test("AutoCommit -> Happy Path -> Without feature branch detection", sandbo
         Promise.resolve("Test complete"),
     ]))
 
-    const res = await AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: ["commit message"],
         config: { ticketToken: null as unknown as string },
         ...MockedEnv
-    })
+    }))
 
-    assertEquals(res, "Test complete")
+    result.expect.toReturn("Test complete")
     assertServiceWasNotUsed(MockOS)
     assertServiceWasNotUsed(MockFileIO)
     MockConsole.prompt.assert.wasNotCalled()

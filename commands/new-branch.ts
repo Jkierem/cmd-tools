@@ -16,7 +16,7 @@ const NewBranch: Command<BranchConfig,string> = Command
     .map(({ args, branchPrefix, joinChar }) => [
         branchPrefix,
         args.join(joinChar)
-    ].filter(Boolean).join("-"))
+    ].filter(Boolean).join(joinChar))
     .map(branchCmd)
     .effect(printRunMessage)
     .zipLeft(doDefaultConfirm)
