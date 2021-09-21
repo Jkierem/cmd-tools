@@ -1,8 +1,8 @@
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
-import AutoCommit from "../commands/auto-commit.mod.ts"
-import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "./utils/mocks.ts"
-import { fromArray } from "./utils/script.ts"
-import { of } from "./utils/try.ts"
+import AutoCommit from "../../commands/auto-commit.mod.ts"
+import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "../utils/mocks.ts"
+import { fromArray } from "../utils/script.ts"
+import { attempt } from "../utils/try.ts"
 
 const MockedEnv = createMockedEnv()
 const {
@@ -73,7 +73,7 @@ Deno.test("AutoCommit -> Failure Path -> Branch must have numbers", sandbox(asyn
         Promise.resolve("On branch J-")
     ]))
 
-    const result = await of(() => AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: ["commit message"],
         config: { ticketToken: "J" },
         ...MockedEnv
@@ -87,7 +87,7 @@ Deno.test("AutoCommit -> Failure Path -> Branch is not feature branch", sandbox(
         Promise.resolve("On branch Not-feature-branch")
     ]))
 
-    const result = await of(() => AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: ["commit message"],
         config: { ticketToken: "J" },
         ...MockedEnv
@@ -97,7 +97,7 @@ Deno.test("AutoCommit -> Failure Path -> Branch is not feature branch", sandbox(
 }))
 
 Deno.test("AutoCommit -> Failure Path -> No message provided", sandbox(async () => {
-    const result = await of(() => AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: [],
         config: { ticketToken: "J" },
         ...MockedEnv
@@ -107,7 +107,7 @@ Deno.test("AutoCommit -> Failure Path -> No message provided", sandbox(async () 
 }))
 
 Deno.test("AutoCommit -> Failure Path -> Empty message", sandbox(async () => {
-    const result = await of(() => AutoCommit.run({
+    const result = await attempt(() => AutoCommit.run({
         args: ["     "],
         config: { ticketToken: "J" },
         ...MockedEnv
