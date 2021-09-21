@@ -35,6 +35,8 @@ export const assertNoneWasCalled = (mock: Mocked, msg?: string) => {
         throw new AssertionError(msg ?? `Expected every function in mock to have not been called`)
     }
 }
+export const assertServiceWasNotUsed = assertNoneWasCalled;
+
 export const assertEveryWasCalled = (mock: Mocked, msg?: string) => {
     try {
         traverseMock((sp) => sp.assert.wasCalled() ,mock)
@@ -80,3 +82,50 @@ export const createMockedEnv = (): MockedEnv => ({
     fileIO: createMockedFileIO(),
     os: createMockedOS()
 })
+
+type SandboxHooks<T> = {
+    prepare: () => Promise<void>,
+    cleanup: () => Promise<void>,
+    supply: () => T
+}
+
+type MinimalSandboxHooks = {
+    prepare?: () => Promise<void>,
+    cleanup?: () => Promise<void>,
+}
+
+type Sandbox<T> = (fn: (env: T) => Promise<void>) => () => Promise<void>
+
+export const createSandbox = <T>({ prepare, cleanup, supply }: SandboxHooks<T>): Sandbox<T> => {
+    return (fn: (a: T) => Promise<void>) => async () => {
+        await prepare()
+        try {
+            await fn(supply())
+        } finally {
+            await cleanup()
+        }
+    }
+}
+
+export const asyncVoid = async () => {}
+export const wrapInAsync = (fn: () => void) => () => asyncVoid().then(fn)
+
+export const createSimpleSandbox = ({ prepare=asyncVoid, cleanup=asyncVoid }: MinimalSandboxHooks): Sandbox<void> => {
+    return createSandbox({
+        prepare, 
+        cleanup, 
+        supply: () => {}
+    })
+}
+
+export const createSandboxedEnv = (): Sandbox<MockedEnv> => {
+    const env = createMockedEnv()
+    return createSandbox({
+        prepare: async () => {},
+        cleanup: async () => {
+            resetMockContainer(env)
+            return await Promise.resolve()
+        },
+        supply: () => env
+    })
+}

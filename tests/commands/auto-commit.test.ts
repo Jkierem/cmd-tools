@@ -1,8 +1,14 @@
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import AutoCommit from "../../commands/auto-commit.ts"
-import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "../utils/mocks.ts"
 import { fromArray } from "../utils/script.ts"
 import { attempt } from "../utils/try.ts"
+import { 
+    createMockedEnv, 
+    resetMockContainer, 
+    assertServiceWasNotUsed,
+    createSimpleSandbox,
+    wrapInAsync
+} from "../utils/mocks.ts"
 
 const MockedEnv = createMockedEnv()
 const {
@@ -12,14 +18,8 @@ const {
     os: MockOS,
 } = MockedEnv
 
-const cleanup = () => resetMockContainer(MockedEnv)
-const sandbox = (fn: () => Promise<void>) => async () => {
-    try {
-        await fn()
-    } finally {
-        cleanup()
-    }
-}
+const cleanup = wrapInAsync(() => resetMockContainer(MockedEnv))
+const sandbox = createSimpleSandbox({ cleanup })
 
 Deno.test("AutoCommit -> Happy Path -> With feature branch detection", sandbox(async () => {
     MockRunner.run.setImplementation(fromArray([
@@ -34,8 +34,8 @@ Deno.test("AutoCommit -> Happy Path -> With feature branch detection", sandbox(a
     })
 
     assertEquals(res, "Test complete")
-    assertNoneWasCalled(MockOS)
-    assertNoneWasCalled(MockFileIO)
+    assertServiceWasNotUsed(MockOS)
+    assertServiceWasNotUsed(MockFileIO)
     MockConsole.prompt.assert.wasNotCalled()
     MockConsole.log.assert.wasCalledOnce()
     MockConsole.log.assert.wasCalledWith('About to run "git commit -m J-42: commit message"')
@@ -57,8 +57,8 @@ Deno.test("AutoCommit -> Happy Path -> Without feature branch detection", sandbo
     })
 
     assertEquals(res, "Test complete")
-    assertNoneWasCalled(MockOS)
-    assertNoneWasCalled(MockFileIO)
+    assertServiceWasNotUsed(MockOS)
+    assertServiceWasNotUsed(MockFileIO)
     MockConsole.prompt.assert.wasNotCalled()
     MockConsole.log.assert.wasCalledTwice()
     MockConsole.log.assert.wasCalledWith('Feature branch detection is off. Proceeding...')
