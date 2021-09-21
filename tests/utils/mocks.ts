@@ -1,6 +1,6 @@
 import { AssertionError } from "https://deno.land/std@0.106.0/testing/asserts.ts";
-import type { ProcessRunner, FileIO, ConsoleService, OSService } from "../../core/services.mod.ts"
 import { Spy } from "./spy.ts"
+import type { ProcessRunner, FileIO, ConsoleService, OSService } from "../../core/services.mod.ts"
 
 // deno-lint-ignore no-explicit-any
 type AnyFn = (...args: any[]) => any

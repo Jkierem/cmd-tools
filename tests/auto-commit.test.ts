@@ -1,7 +1,8 @@
-import { assert, assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
 import AutoCommit from "../commands/auto-commit.mod.ts"
 import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "./utils/mocks.ts"
 import { fromArray } from "./utils/script.ts"
+import { of } from "./utils/try.ts"
 
 const MockedEnv = createMockedEnv()
 const {
@@ -71,56 +72,46 @@ Deno.test("AutoCommit -> Failure Path -> Branch must have numbers", sandbox(asyn
     MockRunner.run.setImplementation(fromArray([
         Promise.resolve("On branch J-")
     ]))
-    try {
-        await AutoCommit.run({
-            args: ["commit message"],
-            config: { ticketToken: "J" },
-            ...MockedEnv
-        })
-        assert(false, "Should have thrown")
-    } catch(e: unknown) {
-        assertEquals(e, "Branch is not a feature branch")
-    }
+
+    const result = await of(() => AutoCommit.run({
+        args: ["commit message"],
+        config: { ticketToken: "J" },
+        ...MockedEnv
+    }))
+
+    result.expect.toThrow("Branch is not a feature branch")
 }))
 
 Deno.test("AutoCommit -> Failure Path -> Branch is not feature branch", sandbox(async () => {
     MockRunner.run.setImplementation(fromArray([
         Promise.resolve("On branch Not-feature-branch")
     ]))
-    try {
-        await AutoCommit.run({
-            args: ["commit message"],
-            config: { ticketToken: "J" },
-            ...MockedEnv
-        })
-        assert(false, "Should have thrown")
-    } catch(e: unknown) {
-        assertEquals(e, "Branch is not a feature branch")
-    }
+
+    const result = await of(() => AutoCommit.run({
+        args: ["commit message"],
+        config: { ticketToken: "J" },
+        ...MockedEnv
+    }))
+
+    result.expect.toThrow("Branch is not a feature branch")
 }))
 
 Deno.test("AutoCommit -> Failure Path -> No message provided", sandbox(async () => {
-    try {
-        await AutoCommit.run({
-            args: [],
-            config: { ticketToken: "J" },
-            ...MockedEnv
-        })
-        assert(false, "Should have thrown")
-    } catch(e: unknown) {
-        assertEquals(e, "No message provided")
-    }
+    const result = await of(() => AutoCommit.run({
+        args: [],
+        config: { ticketToken: "J" },
+        ...MockedEnv
+    }))
+
+    result.expect.toThrow("No message provided")
 }))
 
 Deno.test("AutoCommit -> Failure Path -> Empty message", sandbox(async () => {
-    try {
-        await AutoCommit.run({
-            args: ["     "],
-            config: { ticketToken: "J" },
-            ...MockedEnv
-        })
-        assert(false, "Should have thrown")
-    } catch(e: unknown) {
-        assertEquals(e, "Message is empty")
-    }
+    const result = await of(() => AutoCommit.run({
+        args: ["     "],
+        config: { ticketToken: "J" },
+        ...MockedEnv
+    }))
+
+    result.expect.toThrow("Message is empty")
 }))
