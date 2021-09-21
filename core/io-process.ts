@@ -1,5 +1,5 @@
-import IOPromise from "./io-promise.mod.ts"
-import type { ProcessRunner } from "./services.mod.ts"
+import IOPromise from "./io-promise.ts"
+import type { ProcessRunner } from "./services.ts"
 
 const IOProcess = {
     of: (cmd: string[]) => {

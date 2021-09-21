@@ -1,8 +1,8 @@
-import IOPromise from "../core/io-promise.mod.ts"
-import { Command } from "../core/command.mod.ts"
-import BuildCommand from "./self-commands/build.mod.ts"
-import InitCommand from "./self-commands/init-config.mod.ts"
-import UpdateSelf from "./self-commands/update-self.mod.ts"
+import IOPromise from "../core/io-promise.ts"
+import { Command } from "../core/command.ts"
+import BuildCommand from "./self-commands/build.ts"
+import InitCommand from "./self-commands/init-config.ts"
+import UpdateSelf from "./self-commands/update-self.ts"
 
 const SelfCommands = Command
     .ask<{ fileUrl: string }>()

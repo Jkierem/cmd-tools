@@ -5,10 +5,10 @@ import {
     rebaseBranch, 
     stashBranch,
     hasChanges,
-} from '../core/git-helpers.mod.ts'
-import { Command } from '../core/command.mod.ts'
-import { printLn } from "../core/io-helpers.mod.ts"
-import { UpdateConfig } from "../core/configuration.mod.ts"
+} from '../core/git-helpers.ts'
+import { Command } from '../core/command.ts'
+import { printLn } from "../core/io-helpers.ts"
+import { UpdateConfig } from "../core/configuration.ts"
 
 const AutoUpdate: Command<UpdateConfig,string> = Command
     .ask<UpdateConfig>()

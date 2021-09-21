@@ -1,7 +1,7 @@
-import { Command } from "../core/command.mod.ts"
-import { readFile } from "../core/io-helpers.mod.ts"
-import { resolveFolder, relativePathTo } from "../core/resolve.mod.ts"
-import { decode } from "../core/codec.mod.ts"
+import { Command } from "../core/command.ts"
+import { readFile } from "../core/io-helpers.ts"
+import { resolveFolder, relativePathTo } from "../core/resolve.ts"
+import { decode } from "../core/codec.ts"
 
 const HelpCommand = Command
     .ask<{ fileUrl: string }>()

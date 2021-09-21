@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.106.0/testing/asserts.ts";
-import AutoCommit from "../../commands/auto-commit.mod.ts"
+import AutoCommit from "../../commands/auto-commit.ts"
 import { createMockedEnv, resetMockContainer, assertNoneWasCalled } from "../utils/mocks.ts"
 import { fromArray } from "../utils/script.ts"
 import { attempt } from "../utils/try.ts"

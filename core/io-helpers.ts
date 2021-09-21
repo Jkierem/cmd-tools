@@ -1,6 +1,6 @@
-import IOPromise from './io-promise.mod.ts'
-import Either from './either.mod.ts'
-import type { ConsoleService, FileIO, OSService } from "./services.mod.ts"
+import IOPromise from './io-promise.ts'
+import Either from './either.ts'
+import type { ConsoleService, FileIO, OSService } from "./services.ts"
 
 export const doPrompt = (message: string) => IOPromise
     .require<{ console: ConsoleService }>()

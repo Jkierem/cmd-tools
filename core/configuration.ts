@@ -1,9 +1,9 @@
-import { resolveFolder } from "./resolve.mod.ts"
-import IOPromise from "./io-promise.mod.ts"
-import Either from "./either.mod.ts"
-import { decode, encode } from "./codec.mod.ts"
-import { readFile, writeFile, exists } from "./io-helpers.mod.ts"
-import type { FileIO, OSService } from "./services.mod.ts"
+import { resolveFolder } from "./resolve.ts"
+import IOPromise from "./io-promise.ts"
+import Either from "./either.ts"
+import { decode, encode } from "./codec.ts"
+import { readFile, writeFile, exists } from "./io-helpers.ts"
+import type { FileIO, OSService } from "./services.ts"
 
 export type UpdateConfig = {
     baseBranch: string,

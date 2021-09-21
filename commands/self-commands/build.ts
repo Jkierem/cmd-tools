@@ -1,8 +1,8 @@
-import IOPromise from "../../core/io-promise.mod.ts"
-import { Command } from "../../core/command.mod.ts"
-import { resolveFolder, relativePathTo } from "../../core/resolve.mod.ts";
-import { doDefaultConfirm, printLn, writeFile, exists } from "../../core/io-helpers.mod.ts"
-import type { OSService } from "../../core/services.mod.ts"
+import IOPromise from "../../core/io-promise.ts"
+import { Command } from "../../core/command.ts"
+import { resolveFolder, relativePathTo } from "../../core/resolve.ts";
+import { doDefaultConfirm, printLn, writeFile, exists } from "../../core/io-helpers.ts"
+import type { OSService } from "../../core/services.ts"
 
 const reDir = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.rmDir(path).finally(() => os.mkDir(path)))
 const mkDir = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.mkDir(path))

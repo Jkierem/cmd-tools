@@ -1,6 +1,6 @@
-import IOPromise from './io-promise.mod.ts'
-import { EmptyConfig } from "./configuration.mod.ts"
-import type { FileIO, ConsoleService, ProcessRunner, OSService } from "./services.mod.ts"
+import IOPromise from './io-promise.ts'
+import { EmptyConfig } from "./configuration.ts"
+import type { FileIO, ConsoleService, ProcessRunner, OSService } from "./services.ts"
 
 export type CommandEmptyConfig = EmptyConfig
 

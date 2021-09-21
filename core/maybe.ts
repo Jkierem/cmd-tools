@@ -1,4 +1,4 @@
-import IOPromise from './io-promise.mod.ts'
+import IOPromise from './io-promise.ts'
 
 type Extractable<T> = T | (() => T)
 const extract = <T>(t: Extractable<T>): T => t instanceof Function ? t() : t

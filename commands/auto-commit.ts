@@ -1,12 +1,12 @@
-import Either from '../core/either.mod.ts'
-import Maybe from '../core/maybe.mod.ts'
-import IOProcess from "../core/io-process.mod.ts"
-import IOPromise from "../core/io-promise.mod.ts"
-import { printRunMessage, printLn } from '../core/io-helpers.mod.ts'
-import { getCurrentBranch, gitCmd } from "../core/git-helpers.mod.ts"
-import { Command } from '../core/command.mod.ts'
-import { CommitConfig } from "../core/configuration.mod.ts"
-import type { ConsoleService } from "../core/services.mod.ts"
+import Either from '../core/either.ts'
+import Maybe from '../core/maybe.ts'
+import IOProcess from "../core/io-process.ts"
+import IOPromise from "../core/io-promise.ts"
+import { printRunMessage, printLn } from '../core/io-helpers.ts'
+import { getCurrentBranch, gitCmd } from "../core/git-helpers.ts"
+import { Command } from '../core/command.ts'
+import { CommitConfig } from "../core/configuration.ts"
+import type { ConsoleService } from "../core/services.ts"
 
 const TicketRegExp = (ticketToken: string) => new RegExp(`${ticketToken}-[0-9]+`)
 

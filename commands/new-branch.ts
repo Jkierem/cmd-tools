@@ -1,8 +1,8 @@
-import { ifDo } from "../core/io-promise.mod.ts"
-import IOProcess from "../core/io-process.mod.ts"
-import { Command } from '../core/command.mod.ts'
-import { doDefaultConfirm, printRunMessage, printLn } from '../core/io-helpers.mod.ts'
-import { BranchConfig } from "../core/configuration.mod.ts"
+import { ifDo } from "../core/io-promise.ts"
+import IOProcess from "../core/io-process.ts"
+import { Command } from '../core/command.ts'
+import { doDefaultConfirm, printRunMessage, printLn } from '../core/io-helpers.ts'
+import { BranchConfig } from "../core/configuration.ts"
 
 const branchCmd = (name: string) => ["git","checkout","-b",name]
 

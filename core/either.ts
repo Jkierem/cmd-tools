@@ -1,4 +1,4 @@
-import IOPromise from './io-promise.mod.ts'
+import IOPromise from './io-promise.ts'
 
 type Either<Left,Right> = {
     tag: "Left" | "Right",

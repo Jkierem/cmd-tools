@@ -1,6 +1,6 @@
-import Maybe from "./maybe.mod.ts"
-import { decode } from "./codec.mod.ts"
-import type { ConsoleService, FileIO, ProcessRunner, OSService } from "./services.mod.ts"
+import Maybe from "./maybe.ts"
+import { decode } from "./codec.ts"
+import type { ConsoleService, FileIO, ProcessRunner, OSService } from "./services.ts"
 
 export const LiveConsole: ConsoleService = {
     log: console.log,

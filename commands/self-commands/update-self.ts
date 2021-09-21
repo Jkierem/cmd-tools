@@ -1,8 +1,8 @@
-import IOProcess from "../../core/io-process.mod.ts"
-import IOPromise from "../../core/io-promise.mod.ts"
-import { Command } from "../../core/command.mod.ts"
-import { resolveFolder } from "../../core/resolve.mod.ts"
-import { pullBranch } from "../../core/git-helpers.mod.ts"
+import IOProcess from "../../core/io-process.ts"
+import IOPromise from "../../core/io-promise.ts"
+import { Command } from "../../core/command.ts"
+import { resolveFolder } from "../../core/resolve.ts"
+import { pullBranch } from "../../core/git-helpers.ts"
 
 const pwd = IOProcess.of(["pwd"]).map(x => x.trim())
 const cd = (to: string) => IOPromise.from(() => Deno.chdir(to))
