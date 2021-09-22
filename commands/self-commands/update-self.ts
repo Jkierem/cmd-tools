@@ -14,7 +14,7 @@ const UpdateSelf = Command
     .accessMap("fileUrl",resolveFolder)
     .alias("fileUrl","autoRoot")
     .accessEffect("autoRoot",cd)
-    .zipLeft(pullBranch())
+    .effect(() => pullBranch())
     .accessEffect("savedPath",cd)
     .mapTo("Updated auto cmd tools")
 
