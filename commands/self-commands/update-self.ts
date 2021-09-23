@@ -13,9 +13,9 @@ const UpdateSelf = Command
     .supplyChain("savedPath",pwd)
     .accessMap("fileUrl",resolveFolder)
     .alias("fileUrl","autoRoot")
-    .accessEffect("autoRoot",cd)
+    .effect(({ autoRoot }) => cd(autoRoot))
     .zipLeft(pullBranch())
-    .accessEffect("savedPath",cd)
+    .effect(({ savedPath }) => cd(savedPath))
     .mapTo("Updated auto cmd tools")
 
 export default UpdateSelf
