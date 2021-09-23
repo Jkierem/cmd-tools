@@ -39,7 +39,6 @@ export const pullBranch = (...pullOpts: string[]) => IOPromise
     .mapTo(gitCmd("pull",...pullOpts))
     .effect(printRunMessage)
     .chain(IOProcess.of)
-    .effect(printLn)
 
 export const rebaseBranch = (base: string) => {
     return IOPromise
