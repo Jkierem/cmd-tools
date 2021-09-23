@@ -18,4 +18,5 @@ export type OSService = {
     chmod: (path: string, mode: number) => Promise<void>,
     rmDir: (path: string) => Promise<void>,
     exists: (path: string) => Promise<boolean>,
+    chDir: (path: string) => Promise<void>,
 }

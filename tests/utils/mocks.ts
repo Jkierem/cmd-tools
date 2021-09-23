@@ -73,7 +73,8 @@ export const createMockedOS = (): Mocked<OSService> => ({
     create: Spy(async (_path: string) => {}),
     exists: Spy((_path: string) => Promise.resolve(true)),
     mkDir: Spy(async (_path: string) => {}),
-    rmDir: Spy(async (_path: string) => {})
+    rmDir: Spy(async (_path: string) => {}),
+    chDir: Spy(async (_path: string) => {})
 })
 
 export const createMockedEnv = (): MockedEnv => ({

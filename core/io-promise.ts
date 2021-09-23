@@ -69,7 +69,7 @@ const succeed = <Env,A>(run: (env: Env) => Promise<A>): IOPromise<Env,A> => {
         },
         openDependency(key){ return this.expandDependency(key).dropDependency(key) },
         accessEffect<K extends keyof A, B>(key: K, io: (a: A[K]) => IOPromise<Env, B>){
-            return this.chain(data => this.access(key).effect(io).mapTo(data))
+            return this.effect(({ [key]: data }) => io(data))
         },
         accessChain<K extends keyof A, Env0, B>(key: K, io: (a: A[K]) => IOPromise<Env0, B>){
             return this.access(key).chain(io)

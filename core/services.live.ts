@@ -34,6 +34,7 @@ export const LiveOS: OSService = {
     create: (path: string) => Deno.create(path).then(() => {}),
     mkDir: (path: string) => Deno.mkdir(path),
     rmDir: (path: string) => Deno.remove(path, { recursive: true }),
+    chDir: (path: string) => Promise.resolve(Deno.chdir(path)),
     exists: async (path: string) => {
         try {
             await Deno.lstat(path)
