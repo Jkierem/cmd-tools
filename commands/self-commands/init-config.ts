@@ -6,12 +6,12 @@ const InitConfig = Command
     .ask<{ fileUrl: string }>()
     .openDependency("config")
     .supplyChain("ticketToken", doPrompt("What branch token are you using?"))
-    .supplyChain("branchPrefix", doPrompt("What is the prefix for commits?"))
+    .supplyChain("prefix", doPrompt("What is the prefix for commits?"))
     .supplyChain("baseBranch", doPromptOr("What is the base branch?","development"))
     .supplyChain("autoStashEnabled", doBooleanConfirm("Enable autostashing?").map(x => x ? "true" : "false"))
     .map(({ 
         autoStashEnabled, 
-        branchPrefix,
+        prefix,
         baseBranch,
         ticketToken,
         fileUrl,
@@ -19,8 +19,9 @@ const InitConfig = Command
     }) => ({
         data: {
             branch: {
-                branchPrefix,
+                prefix,
                 joinChar: "-",
+                separator: "/",
             },
             commit: { ticketToken },
             update: {

@@ -9,14 +9,14 @@ const branchCmd = (name: string) => ["git","checkout","-b",name]
 const NewBranch: Command<BranchConfig,string> = Command
     .ask<BranchConfig>()
     .openDependency("config")
-    .effect(({ branchPrefix }) => ifDo(
-        !branchPrefix,
+    .effect(({ prefix }) => ifDo(
+        !prefix,
         printLn("Branch prefixing is disabled. Proceeding without prefix...")
     ))
-    .map(({ args, branchPrefix, joinChar }) => [
-        branchPrefix,
+    .map(({ args, prefix, joinChar, separator }) => [
+        prefix,
         args.join(joinChar)
-    ].filter(Boolean).join(joinChar))
+    ].filter(Boolean).join(separator))
     .map(branchCmd)
     .effect(printRunMessage)
     .zipLeft(doDefaultConfirm)

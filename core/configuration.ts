@@ -16,8 +16,9 @@ export type CommitConfig = {
 }
 
 export type BranchConfig = {
-    branchPrefix: string,
-    joinChar: string
+    prefix: string,
+    joinChar: string,
+    separator: string,
 }
 
 export type ConfigFile = {
