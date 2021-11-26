@@ -8,6 +8,8 @@ export const gitCmd = (...args: string[]) => ["git",...args]
 
 export const gitStatus = IOProcess.of(gitCmd("status"))
 
+export const gitAddAll = IOProcess.of(gitCmd("add","-A"))
+
 const noChangesStr = "nothing to commit, working tree clean"
 export const hasChanges = gitStatus.map(statusMsg => !statusMsg.includes(noChangesStr))
 

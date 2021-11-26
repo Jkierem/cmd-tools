@@ -2,6 +2,10 @@ CUSTOM_CMD_TOOLS=$(pwd)
 mkdir ./sandbox
 cd ./sandbox
 git init
+read -p "Provide a git user.name:" UNAME
+read -p "Provide a git user.email:" UEMAIL
+git config user.name $UNAME
+git config user.email $UEMAIL
 git commit --allow-empty -m "initial commit"
 git checkout -b "development"
 git commit --allow-empty -m "Test commit"

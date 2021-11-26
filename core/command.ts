@@ -17,6 +17,8 @@ export type CommandEnv<T = EmptyConfig> = {
 
 export type Command<Env,A> = IOPromise<CommandEnv<Env>,CommandResult<A>>
 
+export type CommandOf<A> = Command<EmptyConfig,A>
+
 export const Command = {
     ask: <T = EmptyConfig>() => IOPromise.require<CommandEnv<T>>(),
     pure: <T = EmptyConfig>(): Command<T, CommandEnv<T>> => IOPromise.require<CommandEnv<T>>(),

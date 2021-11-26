@@ -6,9 +6,9 @@
     ],
     "scripts": {
         "runner": "runner.ts",
-        "build": "vr runner build",
+        "build": "vr runner self build",
         "clean": "rm -rf ./bin",
-        "prepare": "./scripts/prepare",
+        "prepare": "./scripts/prepare.sh",
         "install": "./scripts/install.sh",
         "test": "deno test --allow-env"
     }

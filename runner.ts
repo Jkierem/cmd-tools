@@ -1,3 +1,4 @@
+import AutoAdd from "./commands/auto-add.ts"
 import AutoCommit from "./commands/auto-commit.ts"
 import AutoUpdate from "./commands/auto-update.ts"
 import ConfigCommand from "./commands/config-command.ts"
@@ -33,7 +34,8 @@ const pickCommand = IOPromise
             help: HelpCommand,
             move: SmartMove,
             update: AutoUpdate,
-            self: SelfCommands
+            self: SelfCommands,
+            add: AutoAdd
         }[command] ?? NoOp(command)
         return cmd.supply({ args, config, command })
     })

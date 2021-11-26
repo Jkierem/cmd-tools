@@ -7,9 +7,10 @@ const sandboxed = createSandboxedEnv()
 
 Deno.test("NewBranch -> Happy Path -> With Branch Prefix", sandboxed(async (Env) => {
     const args = ["some","new","branch"]
-    const branchPrefix = "Test"
+    const prefix = "Test"
     const joinChar = "-"
-    const expectedBranch = [branchPrefix, ...args].join(joinChar)
+    const separator = "-"
+    const expectedBranch = [prefix, args.join(joinChar)].join(separator)
     const cmdMessage = "git has some message for branch creation"
 
     Env.console.prompt.setImplementation(fromArray(["yes"]))
@@ -22,7 +23,8 @@ Deno.test("NewBranch -> Happy Path -> With Branch Prefix", sandboxed(async (Env)
         args,
         config: { 
             joinChar,
-            branchPrefix,
+            prefix,
+            separator,
         },
         ...Env,
     }))
@@ -39,8 +41,9 @@ Deno.test("NewBranch -> Happy Path -> With Branch Prefix", sandboxed(async (Env)
 
 Deno.test("NewBranch -> Happy Path -> Without Branch Prefix", sandboxed(async (Env) => {
     const args = ["some","new","branch"]
-    const branchPrefix = null as unknown as string
+    const prefix = null as unknown as string
     const joinChar = "-"
+    const separator = "-"
     const expectedBranch = args.join(joinChar)
     const cmdMessage = "git has some message for branch creation"
 
@@ -54,7 +57,8 @@ Deno.test("NewBranch -> Happy Path -> Without Branch Prefix", sandboxed(async (E
         args,
         config: { 
             joinChar,
-            branchPrefix, 
+            prefix,
+            separator
         },
         ...Env,
     }))

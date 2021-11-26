@@ -3,6 +3,7 @@ by Jkierem (Juan Miguel Gomez)
 
 Deno based command runner. Available commands are:
 
+  add                      : do git add -A and then git status
   commit [message]         : do an auto commit prefixing the branch name if it matches the ticketToken in config
   update                   : perform auto rebase against the baseBranch in config  
   config set [key] [value] : set a config key with the given value
