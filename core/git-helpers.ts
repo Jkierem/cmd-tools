@@ -22,7 +22,7 @@ export const getCurrentBranch = gitStatus
     ).map((str) => str.replace("On branch","").trim())
 
 export const getAllBranches = IOProcess
-    .of(gitCmd("branch","-a"))
+    .of(gitCmd("branch"))
     .map(str => str.split(/[\n\r]/)
         .map(x => x.trim())
         .filter(Boolean)
