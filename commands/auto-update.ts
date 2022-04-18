@@ -9,22 +9,24 @@ import {
 import { Command } from '../core/command.ts'
 import { printLn } from "../core/io-helpers.ts"
 import { UpdateConfig } from "../core/configuration.ts"
+import { openDependency, supplyChain } from '../core/jazzi/ext.ts'
 
 const AutoUpdate: Command<UpdateConfig,string> = Command
     .ask<UpdateConfig>()
-    .openDependency("config")
-    .supplyChain("hasChanges", hasChanges)
-    .effect(({ autoStashEnabled, hasChanges }) => {
+    .pipe(openDependency("config"))
+    .pipe(supplyChain("hasChanges", hasChanges))
+    .tapEffect(({ autoStashEnabled, hasChanges }) => {
         return autoStashEnabled === "true" 
             ? hasChanges 
                 ? stashBranch.chain(printLn)
                 : printLn("Branch has no changes")
             : printLn("Autostash is disabled")
     })
-    .supplyChain("currentBranch", getCurrentBranch)
-    .effect(({ baseBranch }) => switchBranch(baseBranch))
-    .effect(({ pullOptions }) => pullBranch(...(pullOptions === "default" ? [] : ["--rebase"])))
-    .effect(({ currentBranch }) => switchBranch(currentBranch))
-    .accessChain("baseBranch", rebaseBranch)
+    .pipe(supplyChain("currentBranch", getCurrentBranch))
+    .tapEffect(({ baseBranch }) => switchBranch(baseBranch))
+    .tapEffect(({ pullOptions }) => pullBranch(...(pullOptions === "default" ? [] : ["--rebase"])))
+    .tapEffect(({ currentBranch }) => switchBranch(currentBranch))
+    .access("baseBranch")
+    .chain(rebaseBranch)
 
 export default AutoUpdate

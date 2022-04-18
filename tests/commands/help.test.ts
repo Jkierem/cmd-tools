@@ -1,6 +1,7 @@
 import HelpCommand from "../../commands/help.ts"
 import { attempt } from "../utils/try.ts"
 import { createSandboxedEnv, assertServiceWasNotUsed } from "../utils/mocks.ts"
+import { resolveFolder, relativePathTo } from "../../core/resolve.ts"
 import { fromArray } from "../utils/script.ts"
 
 const fileText = "Hey there"
@@ -13,7 +14,7 @@ Deno.test("HelpCommand -> Happy Path", sandboxed(async (MockedEnv) => {
     ]))
 
     const fileUrl = "file:///folder/index.ts"
-    const helpPath = "/folder/resources/help.txt"
+    const helpPath = relativePathTo("resources/help.txt")(resolveFolder(fileUrl))
 
     const result = await attempt(() => HelpCommand.run({
         args: [],

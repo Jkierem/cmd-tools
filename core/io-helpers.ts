@@ -1,10 +1,10 @@
-import IOPromise from './io-promise.ts'
-import Either from './either.ts'
+import { Either, Async } from './jazzi/mod.ts'
 import type { ConsoleService, FileIO, OSService } from "./services.ts"
 
-export const doPrompt = (message: string) => IOPromise
+export const doPrompt = (message: string) => Async
     .require<{ console: ConsoleService }>()
-    .accessChain("console", (c) => IOPromise.from(() => c.prompt(message)))
+    .access("console")
+    .chain((c) => Async.of(() => c.prompt(message)))
 
 export const doPromptOr = (msg: string, def: string) => 
     doPrompt(`${msg} (${def})`)
@@ -36,36 +36,35 @@ export const doBooleanConfirm = (msg: string, bias=Bias.Yes) => doBiasConfirm(ms
 
 export const doConfirm = (msg: string) => 
     doBiasConfirm(msg, Bias.No).chain((str) => {
-        return Either.of(str)
-            .chain(Either.ofPredicate<"no","yes">((s: "yes" | "no"): s is "yes" => s === "yes"))
+        return Either.fromPredicate((x): x is "yes" => x === "yes", str)
             .mapLeft(() => "Responded negative to confirmation")
-            .toIOPromise()
+            .toAsync()
     })
 
 export const doDefaultConfirm = doConfirm("Are you sure?")
 
-export const printLn = <T>(...args: T[]) => IOPromise
+export const printLn = <T>(...args: T[]) => Async
     .require<{ console: ConsoleService }>()
-    .openDependency("console")
+    .access("console")
     .access("log")
-    .chain((log) => IOPromise.through(log)(...args))
+    .chain((log) => Async.through(log)(...args))
 
 export const printRunMessage = (cmd: string[]) => printLn(`About to run "${cmd.join(" ")}"`)
 
-export const readFile = (path: string) => IOPromise
+export const readFile = (path: string) => Async
     .require<{ fileIO: FileIO }>()
-    .openDependency("fileIO")
+    .access("fileIO")
     .access("read")
-    .chain((read) => IOPromise.of(() => read(path)))
+    .chain((read) => Async.from(() => read(path)))
 
-export const writeFile = (path: string, data: string) => IOPromise
+export const writeFile = (path: string, data: string) => Async
     .require<{ fileIO: FileIO }>()
-    .openDependency("fileIO")
+    .access("fileIO")
     .access("write")
-    .chain((write) => IOPromise.of(() => write(path,data)))
+    .chain((write) => Async.from(() => write(path,data)))
 
-export const exists = (path: string) => IOPromise
+export const exists = (path: string) => Async
     .require<{ os: OSService }>()
-    .openDependency("os")
+    .access("os")
     .access("exists")
-    .chain((exists) => IOPromise.of(() => exists(path)))
+    .chain((exists) => Async.from(() => exists(path)))

@@ -1,6 +1,5 @@
 import { resolveFolder } from "./resolve.ts"
-import IOPromise from "./io-promise.ts"
-import Either from "./either.ts"
+import { Either, Async } from "./jazzi/mod.ts"
 import { decode, encode } from "./codec.ts"
 import { readFile, writeFile, exists } from "./io-helpers.ts"
 import type { FileIO, OSService } from "./services.ts"
@@ -34,42 +33,50 @@ export type EmptyConfig = Record<string,never>
 
 const parseConfig = (str: string) => Either
     .attempt(() => JSON.parse(str) as ConfigFile)
-    .mapLeftTo("Error parsing config. Try running 'auto self init' to create a new config file")
-    .toIOPromise()
+    .mapLeft(() => "Error parsing config. Try running 'auto self init' to create a new config file")
+    .toAsync()
 
 const relativeConfig = (x: string) => `${x}/config.json`
 const getConfigPath = (fileUrl: string) => relativeConfig(resolveFolder(fileUrl))
 const shouldSkipConfig = (str: string) => str === "self" || str === "help"
 
-export const getAllConfig = IOPromise
+export const getAllConfig = Async
     .require<{ fileUrl: string, skip?: boolean }>()
-    .accessMap("fileUrl", getConfigPath)
+    .map(x => {
+        return {
+            ...x,
+            fileUrl: getConfigPath(x.fileUrl)
+        }
+    })
     .alias("fileUrl","path")
-    .chain(({ path, skip }) => skip ? IOPromise.succeed(encode("{}")) : readFile(path))
+    .chain(({ path, skip }) => skip 
+        ? Async.require<{ fileIO: FileIO }>().mapTo(encode("{}")) 
+        : readFile(path)
+    )
     .map(decode)
     .chain(parseConfig)
 
 const getOr = <T,F>(key: string, fallback: F, obj: T) => obj?.[key as keyof T] ?? fallback
 
-export const getConfig = IOPromise
+export const getConfig = Async
     .require<{ command: string, fileUrl: string, fileIO: FileIO, os: OSService }>()
     .map((data) => ({ ...data, skip: shouldSkipConfig(data.command)}))
-    .effect(({ fileUrl, skip }) => {
+    .tapEffect(({ fileUrl, skip }) => {
         return Either
         .of(skip)
         .fold(
             () => exists(getConfigPath(fileUrl)).chain(
                 available => available 
-                    ? IOPromise.unit
-                    : IOPromise.fail("Config file is not available. Try running 'auto self init'")
+                    ? Async.unit()
+                    : Async.Fail("Config file is not available. Try running 'auto self init'")
             ),
-            () => IOPromise.unit
+            () => Async.require<{ os: OSService }>().mapTo(undefined)
         )
     })
-    .supplyChain("config", getAllConfig)
+    .chain(x => getAllConfig.provide(x).map((config) => ({ ...x, config })))
     .map(({ command, config }) => ({ config: getOr(command, {}, config) }))
 
-export const setConfig = IOPromise
+export const setConfig = Async
     .require<{ fileUrl: string, data: ConfigFile }>()
     .map(({ fileUrl, data }) => ({ 
         path: getConfigPath(fileUrl),

@@ -1,6 +1,5 @@
 import IOProcess from './io-process.ts'
-import IOPromise from "./io-promise.ts"
-import Either from './either.ts'
+import { Either, Async } from './jazzi/mod.ts'
 import { printRunMessage, printLn } from "./io-helpers.ts"
 import type { ConsoleService } from "./services.ts"
 
@@ -18,7 +17,7 @@ export const getCurrentBranch = gitStatus
     .map((str) => str.find(s => s.includes("On branch")))
     .chain((str) => Either.of(str)
         .mapLeft(() => "No branch found")
-        .toIOPromise()
+        .toAsync()
     ).map((str) => str.replace("On branch","").trim())
 
 export const getAllBranches = IOProcess
@@ -29,30 +28,30 @@ export const getAllBranches = IOProcess
     )
 
 export const switchBranch = (branch: string) => {
-    return IOPromise
+    return Async
         .require<{ console: ConsoleService }>()
         .mapTo(gitCmd("switch",branch))
-        .effect(printRunMessage)
+        .tapEffect(printRunMessage)
         .chain(IOProcess.of)
 }
 
-export const pullBranch = (...pullOpts: string[]) => IOPromise
+export const pullBranch = (...pullOpts: string[]) => Async
     .require<{ console: ConsoleService }>()
     .mapTo(gitCmd("pull",...pullOpts))
-    .effect(printRunMessage)
+    .tapEffect(printRunMessage)
     .chain(IOProcess.of)
-    .effect(printLn)
+    .tapEffect(printLn)
 
 export const rebaseBranch = (base: string) => {
-    return IOPromise
+    return Async
         .require<{ console: ConsoleService }>()
         .mapTo(gitCmd("rebase",base))
-        .effect(printRunMessage)
+        .tapEffect(printRunMessage)
         .chain(IOProcess.of)
 }
 
-export const stashBranch = IOPromise
+export const stashBranch = Async
     .require<{ console: ConsoleService }>()
     .mapTo(gitCmd("stash","push","-m",'"auto-stashing current branch"'))
-    .effect(printRunMessage)
+    .tapEffect(printRunMessage)
     .chain(IOProcess.of)

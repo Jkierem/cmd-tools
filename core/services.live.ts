@@ -1,4 +1,4 @@
-import Maybe from "./maybe.ts"
+import { Maybe } from "./jazzi/mod.ts"
 import { decode } from "./codec.ts"
 import type { ConsoleService, FileIO, ProcessRunner, OSService } from "./services.ts"
 

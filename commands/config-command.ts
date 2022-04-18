@@ -1,24 +1,24 @@
-import IOPromise, { ifDo } from "../core/io-promise.ts"
-import Either from "../core/either.ts"
+import { Either, Async } from '../core/jazzi/mod.ts'
 import { Command } from "../core/command.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.ts"
 import { printLn } from "../core/io-helpers.ts"
+import { ifDo, openDependency } from '../core/jazzi/ext.ts'
 import type { FileIO, ConsoleService } from "../core/services.ts"
 
 const actions = ["get", "set"]
 const validateAction = (action: string) => {
     return Either
-        .fromPredicate((a: string) => actions.includes(a), action)
-        .mapLeftTo("Unknown action passed to config command")
-        .toIOPromise()
+        .fromCondition((a: string) => actions.includes(a), action)
+        .mapLeft(() => "Unknown action passed to config command")
+        .toAsync()
 }
 
 const specialStringify = <T>(data: T) => JSON.stringify(data, null, 3)
 
 const validateDefined = <T>(x: T) => Either.of(x)
     .map(specialStringify)
-    .mapLeftTo(`Key does not exist in config`)
-    .toIOPromise()
+    .mapLeft(() => `Key does not exist in config`)
+    .toAsync()
 
 type PathType<Obj, Path> = Path extends `${infer Left}.${infer Right}` 
     ? Left extends keyof Obj 
@@ -35,10 +35,10 @@ const getPath = <T,K extends string>(path: K, obj: T): PathType<T,K> => {
     )
 }
 
-const GetAction = IOPromise
+const GetAction = Async
     .require<{ key: string, configData: ConfigFile }>()
     .map(({ key, configData }) => {
-        return Either.fromPredicate(() => key === ".", key)
+        return Either.fromCondition(() => key === ".", key)
             .fold(
                 () => getPath(key, configData),
                 () => configData
@@ -62,25 +62,27 @@ const setPath = <T,K extends string>(path: K, value: PathType<T,K>, obj: T): voi
 
 type LeafValue = string | null
 type SetEnv = { key: string, value: string, configData: ConfigFile, fileUrl: string, fileIO: FileIO, console: ConsoleService }
+type Nullable<T> = T | null | undefined
 const validateSet = ({ key, value, configData }: SetEnv) => {
-    const fromUndefined = Either.ofPredicate(<T>(x: T): x is T  => x !== undefined)
-    const fromNullish = Either.ofPredicate(<T>(x: T): x is T  => x !== null && x !== undefined)
-    const fromEmpty = Either.ofPredicate((x: string): x is string => x.length !== 0)
-    const fromLeafValue = Either.ofPredicate((x: string | null | undefined): x is LeafValue => x === null || typeof x === "string" )
+    const fromUndefined = <T>(a: T | undefined) => Either.fromPredicate((x: T | undefined): x is T => x !== undefined, a)
+    const fromNullish = (a?: string) => Either.fromPredicate(<T>(x: T): x is T  => x !== null && x !== undefined, a)
+    const fromEmpty = (a: string) => Either.fromPredicate((x: string): x is string => x.length !== 0, a)
+    const fromLeafValue = (a: Nullable<string>) => 
+        Either.fromPredicate((x: Nullable<string>): x is LeafValue => x === null || typeof x === "string" , a)
     return fromUndefined(getPath(key,configData))
-        .mapLeftTo(`"${key}" is not a config option`)
-        .chain((p) => fromLeafValue(p).mapLeftTo("Value being set must be a leaf value"))
-        .chain(() => fromNullish(value).mapLeftTo("Value being set cannot be empty"))
-        .chain(() => fromEmpty(value.trim()).mapLeftTo("Value being set cannot be empty"))
-        .toIOPromise()
+        .mapLeft(() => `"${key}" is not a config option`)
+        .chain((p) => fromLeafValue(p).mapLeft(() => "Value being set must be a leaf value"))
+        .chain(() => fromNullish(value).mapLeft(() => "Value being set cannot be empty"))
+        .chain(() => fromEmpty(value.trim()).mapLeft(() => "Value being set cannot be empty"))
+        .toAsync()
 }
 
 const nullify = (val: string): string | null => val === "null" ? null : val 
 
-const SetAction = IOPromise
+const SetAction = Async
     .require<SetEnv>()
-    .effect(validateSet)
-    .effect(({ key, value }) => ifDo(
+    .tapEffect(validateSet)
+    .tapEffect(({ key, value }) => ifDo(
         value === "null",
         printLn(`Turning "${key}" config off. Some commands may fail.`) 
     ))
@@ -99,7 +101,7 @@ const pickAction = (action: string) => action === "get" ? GetAction : SetAction
 
 const ConfigCommand = Command
     .ask<{ fileUrl: string }>()
-    .openDependency("config")
+    .pipe(openDependency("config"))
     .map(({ args, fileUrl, runner, fileIO, console }) => ({ 
         action: args[0], 
         key:    args[1], 
@@ -109,9 +111,13 @@ const ConfigCommand = Command
         fileIO,
         console,
     }))
-    .accessEffect("action", validateAction)
-    .supplyChain("configData", getAllConfig)
-    .chain(({ action, ...rest }) => pickAction(action).supply(rest))
+    .tapEffect(({ action }) => validateAction(action))
+    .chain(data => {
+        return getAllConfig
+            .provide(data)
+            .map((configData) => ({ ...data, configData }))
+    })
+    .chain(({ action, ...rest }) => pickAction(action).provide(rest))
 
 export default ConfigCommand
     

@@ -1,37 +1,39 @@
-import IOPromise from "../../core/io-promise.ts"
+import { Async } from '../../core/jazzi/mod.ts'
+import { openDependency, accessMap } from '../../core/jazzi/ext.ts'
 import { Command } from "../../core/command.ts"
 import { resolveFolder, relativePathTo } from "../../core/resolve.ts";
 import { doDefaultConfirm, printLn, writeFile, exists } from "../../core/io-helpers.ts"
 import type { OSService } from "../../core/services.ts"
 
-const reDir = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.rmDir(path).finally(() => os.mkDir(path)))
-const mkDir = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.mkDir(path))
-const touch = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.create(path))
-const chmod = IOPromise.from<{ os: OSService, path: string }, void>(({ os, path }) => os.chmod(path, 0o754))
+type OSEnv = { os: OSService, path: string }
+
+const reDir = Async.from<OSEnv, unknown, void>(({ os, path }) => os.rmDir(path).finally(() => os.mkDir(path)))
+const mkDir = Async.from<OSEnv, unknown, void>(({ os, path }) => os.mkDir(path))
+const touch = Async.from<OSEnv, unknown, void>(({ os, path }) => os.create(path))
+const chmod = Async.from<OSEnv, unknown, void>(({ os, path }) => os.chmod(path, 0o754))
 const buildContent = `#!/bin/sh\ndeno run --allow-read --allow-write --allow-run $CUSTOM_CMD_TOOLS/runner.ts "$@"`
 
 const Build = Command
     .ask<{ fileUrl: string }>()
     .zipLeft(printLn("You are about to delete the bin folder and create a new build."))
     .zipLeft(doDefaultConfirm)
-    .openDependency("config")
+    .pipe(openDependency("config"))
     .alias("fileUrl","path")
-    .accessMap("path", resolveFolder)
-    .accessMap("path", relativePathTo("bin"))
-    .effect(({ path }) => 
+    .pipe(accessMap("path", resolveFolder))
+    .pipe(accessMap("path", relativePathTo("bin")))
+    .tapEffect(({ path, os }) => 
         exists(path)
         .chain((isFolderPresent) => 
             isFolderPresent 
-                ? reDir.supply({ path }).mapTo("Deleted and created bin folder")
-                : mkDir.supply({ path }).mapTo("Created bin folder")
+                ? reDir.provide({ os, path }).mapTo("Deleted and created bin folder")
+                : mkDir.provide({ os, path }).mapTo("Created bin folder")
         )
         .chain(printLn)
     )
-    .access("path")
-    .map(relativePathTo("runner"))
-    .effect((path) => touch.supply({ path }).zipLeft(printLn("Created runner file")))
-    .effect((path) => writeFile(path,buildContent).zipLeft(printLn("Added file content")))
-    .chain((path) => chmod.supply({ path }).zipLeft(printLn("Added run permissions")))
+    .pipe(accessMap("path", relativePathTo("runner")))
+    .tapEffect(({ os, path }) => touch.provide({ os, path }).zipLeft(printLn("Created runner file")))
+    .tapEffect(({ path }) => writeFile(path,buildContent).zipLeft(printLn("Added file content")))
+    .chain(({ os, path }) => chmod.provide({ os, path }).zipLeft(printLn("Added run permissions")))
     .mapTo("Build finished")
 
 export default Build

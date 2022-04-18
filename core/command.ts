@@ -1,4 +1,5 @@
-import IOPromise from './io-promise.ts'
+import Async from './jazzi/async/mod.ts'
+import type { Async as AsyncT } from './jazzi/async/types.ts'
 import { EmptyConfig } from "./configuration.ts"
 import type { FileIO, ConsoleService, ProcessRunner, OSService } from "./services.ts"
 
@@ -15,13 +16,13 @@ export type CommandEnv<T = EmptyConfig> = {
     os: OSService
 }
 
-export type Command<Env,A> = IOPromise<CommandEnv<Env>,CommandResult<A>>
+export type Command<Env,A> = AsyncT<CommandEnv<Env>, unknown, CommandResult<A>>
 
 export type CommandOf<A> = Command<EmptyConfig,A>
 
 export const Command = {
-    ask: <T = EmptyConfig>() => IOPromise.require<CommandEnv<T>>(),
-    pure: <T = EmptyConfig>(): Command<T, CommandEnv<T>> => IOPromise.require<CommandEnv<T>>(),
-    fail: <T>(cause: T) => IOPromise.fail(cause) as Command<unknown,never>,
-    succeed: <T>(value: T) => IOPromise.succeed(value) as Command<unknown,T>,
+    ask: <T = EmptyConfig>() => Async.require<CommandEnv<T>>(),
+    pure: <T = EmptyConfig>(): Command<T, CommandEnv<T>> => Async.require<CommandEnv<T>>(),
+    fail: <T>(cause: T) => Async.Fail(cause) as Command<unknown,never>,
+    succeed: <T>(value: T) => Async.Success(value) as Command<unknown,T>,
 }

@@ -6,7 +6,7 @@ import HelpCommand from "./commands/help.ts"
 import NewBranch from "./commands/new-branch.ts"
 import SmartMove from "./commands/smart-move.ts"
 import SelfCommands from "./commands/self-commands.ts"
-import IOPromise  from "./core/io-promise.ts"
+import { Async } from "./core/jazzi/mod.ts"
 import { Command, CommandEnv } from "./core/command.ts"
 import { getConfig, Config } from "./core/configuration.ts"
 import { LiveProcess, LiveFileIO, LiveConsole, LiveOS } from "./core/services.live.ts"
@@ -23,7 +23,7 @@ function specialStringify<T>(key: string, value: T){
 }
 const Debug = Command.ask().map((x: CommandEnv) => JSON.stringify(x,specialStringify,3))
 
-const pickCommand = IOPromise
+const pickCommand = Async
     .require<{ command: string, args: string[], config: Config }>()
     .chain(({ command, config, args }) => {
         const cmd = {
@@ -37,7 +37,12 @@ const pickCommand = IOPromise
             self: SelfCommands,
             add: AutoAdd
         }[command] ?? NoOp(command)
-        return cmd.supply({ args, config, command })
+        return cmd.provide({ 
+            args, 
+            command,
+            config, 
+        // deno-lint-ignore no-explicit-any
+        } as any)
     })
 
 const onConsole = (method: "log" | "error") => (msg: string) => (x: string) => {
@@ -48,7 +53,8 @@ const logSuccess = onConsole("log")
 const logError = onConsole("error")
 
 getConfig
-.accessChain("config",(config) => pickCommand.supply({ config }))
+// deno-lint-ignore no-explicit-any
+.chain(({ config }) => pickCommand.providePartial({ config: config as any }))
 .run({
     command,
     fileUrl: import.meta.url, 
@@ -57,6 +63,7 @@ getConfig
     fileIO: LiveFileIO,
     console: LiveConsole,
     os: LiveOS
-})
+// deno-lint-ignore no-explicit-any
+} as any)
 .then(logSuccess("Command was succesful"))
 .catch(logError("Command failed"))

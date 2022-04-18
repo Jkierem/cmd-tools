@@ -1,25 +1,25 @@
-import Either from '../core/either.ts'
+import { Either } from '../core/jazzi/mod.ts'
 import { Command, CommandEnv } from '../core/command.ts'
 import { getAllBranches, switchBranch } from "../core/git-helpers.ts"
 
-const getHint = ({ args }: CommandEnv) =>  Either.of(args[0]).mapLeftTo("No branch hint passed").toIOPromise()
+const getHint = ({ args }: CommandEnv) =>  Either.of(args[0]).mapLeft(() => "No branch hint passed").toAsync()
 
 const cleanBranches = ([hint, branches]: readonly [string,string[]]) => 
     [hint, branches.map(b => b.replaceAll("*","").trim())] as const
 
 const filterByHint = ([hint, branches]: readonly [string,string[]]) => {
     return Either
-        .fromPredicate(strs => Boolean(strs.length), branches.filter(x => x.includes(hint)))
-        .mapLeftTo("No branch matches hint")
-        .toIOPromise()
+        .fromCondition(strs => Boolean(strs.length), branches.filter(x => x.includes(hint)))
+        .mapLeft(() => "No branch matches hint")
+        .toAsync()
 }
 
 const validateUnique = (branches: string[]) => {
     return Either
-        .fromPredicate(x => x.length === 1, branches)
+        .fromCondition(x => x.length === 1, branches)
         .map(x => x[0])
         .mapLeft(() => `Branch is not unique. Branches that match hint are:\n> ${branches.join("\n> ")}`)
-        .toIOPromise()
+        .toAsync()
 }
 
 const SmartMove = Command
