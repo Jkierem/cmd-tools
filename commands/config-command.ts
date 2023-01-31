@@ -2,7 +2,7 @@ import { Either, Async } from '../core/jazzi/mod.ts'
 import { Command } from "../core/command.ts"
 import { getAllConfig, ConfigFile, setConfig } from "../core/configuration.ts"
 import { printLn } from "../core/io-helpers.ts"
-import { ifDo, openDependency } from '../core/jazzi/ext.ts'
+import { ifDo, openDependency, validateAttr } from '../core/jazzi/ext.ts'
 import type { FileIO, ConsoleService } from "../core/services.ts"
 
 const actions = ["get", "set"]
@@ -20,6 +20,9 @@ const validateDefined = <T>(x: T) => Either.of(x)
     .mapLeft(() => `Key does not exist in config`)
     .toAsync()
 
+const validateKey = (key: string) => Either.of(key)
+    .mapLeft(() => "Key cannot be empty")
+    .toAsync()
 type PathType<Obj, Path> = Path extends `${infer Left}.${infer Right}` 
     ? Left extends keyof Obj 
         ? PathType<Obj[Left], Right> 
@@ -111,7 +114,8 @@ const ConfigCommand = Command
         fileIO,
         console,
     }))
-    .tapEffect(({ action }) => validateAction(action))
+    .pipe(validateAttr("action", validateAction))
+    .pipe(validateAttr("key", validateKey))
     .chain(data => {
         return getAllConfig
             .provide(data)

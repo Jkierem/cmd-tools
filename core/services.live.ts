@@ -47,3 +47,14 @@ export const LiveOS: OSService = {
         }
     }
 }
+
+const print = (str: string) => Promise.resolve(console.log(str))
+
+export const DryOS: OSService = {
+    chmod: (path: string, mode: number) => print(`os.chmod(${path},${mode})`),
+    create: (path: string) => print(`os.create(${path})`),
+    mkDir: (path: string) => print(`os.mkDir(${path})`),
+    rmDir: (path: string) => print(`os.rmDir(${path})`),
+    chDir: (path: string) => print(`os.chDir(${path})`),
+    exists: (path: string) => print(`os.exists(${path})`).then(() => true)
+}

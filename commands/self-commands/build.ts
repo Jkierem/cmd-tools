@@ -21,14 +21,10 @@ const Build = Command
     .alias("fileUrl","path")
     .pipe(accessMap("path", resolveFolder))
     .pipe(accessMap("path", relativePathTo("bin")))
-    .tapEffect(({ path, os }) => 
-        exists(path)
-        .chain((isFolderPresent) => 
-            isFolderPresent 
-                ? reDir.provide({ os, path }).mapTo("Deleted and created bin folder")
-                : mkDir.provide({ os, path }).mapTo("Created bin folder")
-        )
-        .chain(printLn)
+    .chain((env) => exists(env.path).map(folderExists => ({ ...env, folderExists })))
+    .tapEffect(({ path, os, folderExists }) => folderExists 
+        ? reDir.provide({ os, path }).zipRight(printLn("Deleted and created bin folder")) 
+        : mkDir.provide({ os, path }).zipRight(printLn("Created bin folder")) 
     )
     .pipe(accessMap("path", relativePathTo("runner")))
     .tapEffect(({ os, path }) => touch.provide({ os, path }).zipLeft(printLn("Created runner file")))
